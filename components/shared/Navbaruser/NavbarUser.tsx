@@ -46,7 +46,7 @@ const NavbarUser: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    router.push("https://zakir-ten.vercel.app");
   };
 
   const handleAdd = (path: string) => {

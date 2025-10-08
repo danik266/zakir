@@ -16,7 +16,7 @@ export default function Dashboard() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.push("/sign-in");
+        router.push("https://zakir-ten.vercel.app");
       } else {
         setUserEmail(session.user.email ?? null);
       }
