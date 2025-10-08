@@ -46,7 +46,7 @@ const NavbarUser: React.FC = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("https://zakir-ten.vercel.app");
+    router.push("/");
   };
 
   const handleAdd = (path: string) => {
@@ -54,22 +54,24 @@ const NavbarUser: React.FC = () => {
   };
 
   return (
-    <div className="w-full z-10 bg-white p-5 mx-auto flex justify-between items-center shadow-md">
+    <div className="w-full z-10 bg-white p-4 md:p-5 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+      {/* Логотип */}
       <div className="flex items-center gap-2">
-        <Image width={70} height={70} alt="Zakir logo" src={logo} />
+        <Image width={50} height={50} alt="Zakir logo" src={logo} />
         <span>
-          <Image width={100} height={70} alt="Zakir text" src={zakir} />
+          <Image width={90} height={50} alt="Zakir text" src={zakir} />
         </span>
       </div>
 
-      <div className="flex gap-4">
+      {/* Меню навигации */}
+      <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-2 md:mt-0">
         {path.map((item, index) => {
           const isActive = pathname === item.path;
           return (
             <Button
               key={index}
               onClick={() => handleAdd(item.path)}
-              className={`${
+              className={`px-4 py-2 text-sm md:text-base ${
                 isActive ? "bg-[#48887B] text-white" : "bg-white text-black"
               } hover:bg-[#48887B] hover:text-white`}
             >
@@ -79,23 +81,24 @@ const NavbarUser: React.FC = () => {
         })}
       </div>
 
-      <div>
+      {/* Пользователь */}
+      <div className="mt-2 md:mt-0 flex flex-col md:flex-row gap-2 md:gap-3 items-center">
         {user ? (
-          <div className="flex gap-3 items-center">
+          <>
             <span className="text-sm">
               👤 {user.user_metadata?.full_name || user.user_metadata?.display_name || "Пользователь"}
             </span>
             <Button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="bg-red-500 hover:bg-red-600 text-white text-sm md:text-base px-3 py-1"
             >
               Выйти
             </Button>
-          </div>
+          </>
         ) : (
           <Button
             onClick={() => router.push("/sign-in")}
-            className="bg-white text-[#48887B] hover:bg-gray-200"
+            className="bg-white text-[#48887B] hover:bg-gray-200 text-sm md:text-base px-3 py-1"
           >
             Войти
           </Button>
