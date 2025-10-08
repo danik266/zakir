@@ -4,9 +4,11 @@ import { use } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import QRCode from "qrcode";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function UserPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function UserPage({ params }: { params: { id: string } }) {
+  const { id } = params;
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -14,23 +16,29 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data, error } = await supabase
+    const checkAuthAndLoad = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = "https://zakir-ten.vercel.app/sign-up";
+        return;
+      }
+      const { data: userData, error } = await supabase
         .from("memorials")
         .select("*")
         .eq("id", id)
         .single();
 
-      if (!error && data) {
-        setUser(data);
-        const pageUrl = `${window.location.origin}/dashboard/user-list/${data.id}`;
+      if (!error && userData) {
+        setUser(userData);
+        const pageUrl = `${window.location.origin}/dashboard/user-list/${userData.id}`;
         const qrDataUrl = await QRCode.toDataURL(pageUrl);
         setQrCodeUrl(qrDataUrl);
       }
+
       setLoading(false);
     };
 
-    getUser();
+    checkAuthAndLoad();
   }, [id]);
 
   const togglePlay = () => {
@@ -59,7 +67,6 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <>
-      {/* 🎧 Панель управления звуком */}
       <div className="flex items-center gap-2 p-4 bg-white rounded-xl shadow mb-6">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
