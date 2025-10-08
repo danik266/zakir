@@ -8,17 +8,19 @@ import { supabase } from "../../../lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { path } from "./links";
 
-interface UserData {
-  user_metadata?: {
-    full_name?: string;
-    display_name?: string;
-  };
+interface UserMetaData {
+  full_name?: string;
+  display_name?: string;
+}
+
+interface SupabaseUser {
+  user_metadata?: UserMetaData;
 }
 
 const NavbarUser: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -27,14 +29,14 @@ const NavbarUser: React.FC = () => {
       } = await supabase.auth.getSession();
 
       if (session?.user) {
-        setUser(session.user);
+        setUser(session.user as SupabaseUser);
       }
     };
 
     getUser();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
+      setUser(session?.user as SupabaseUser | null);
     });
 
     return () => {
