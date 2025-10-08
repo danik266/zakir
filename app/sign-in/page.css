@@ -1,0 +1,12 @@
+.spand{
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+.spand::before,
+.spand::after{
+    content: "  ";
+    flex: 1;
+    border-bottom: 1px solid #48887B;
+    padding: 0 74px;
+}
