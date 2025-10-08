@@ -85,7 +85,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
       </div>
       <div className="min-h-screen py-8 px-4 flex flex-col items-center">
         <div className="max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2">
-          <div className="bg-gray-100 flex items-center justify-center p-6">
+          <div className=" flex items-center justify-center p-6">
             {user.photo_url ? (
               <img
                 src={user.photo_url}
@@ -93,7 +93,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
                 className="w-full max-w-md md:max-w-lg h-auto max-h-80 md:max-h-[600px] object-contain rounded-xl shadow-md mb-6"
               />
             ) : (
-              <div className="w-full h-80 md:h-[600px] flex items-center justify-center text-gray-400 text-lg bg-gray-200 rounded-xl mb-6">
+              <div className="w-full h-80 md:h-[600px] flex items-center justify-center text-gray-400 text-lg mb-6">
                 Нет фото
               </div>
             )}
