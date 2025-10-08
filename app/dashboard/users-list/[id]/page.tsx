@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { use } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import QRCode from "qrcode";
+import Link from "next/link";
 
 export default function UserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -137,7 +138,6 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
                 )}
               </p>
             </div>
-                {/* ✅ QR-код */}
             {qrCodeUrl && (
               <div className="flex flex-col items-center gap-2">
                 <img
@@ -151,12 +151,11 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
               </div>
             )}
             <div className="mt-auto text-right">
-              <a
+              <Link
                 href="/dashboard/users-list"
-                className="text-[#48887B] text-lg hover:underline"
-              >
+                className="text-[#48887B] text-lg hover:underline">
                 Вернуться к страницам
-              </a>
+              </Link>
             </div>
           </div>
         </div>
