@@ -23,9 +23,7 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
 
       if (!error && data) {
         setUser(data);
-
-        // ✅ генерируем QR-код
-        const pageUrl = `${window.location.origin}/dashboard/user/${data.id}`;
+        const pageUrl = `${window.location.origin}/dashboard/user-list/${data.id}`;
         const qrDataUrl = await QRCode.toDataURL(pageUrl);
         setQrCodeUrl(qrDataUrl);
       }
@@ -78,11 +76,8 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
           <source src="/../audio/Mishary_001.mp3" type="audio/mpeg" />
         </audio>
       </div>
-
-      {/* ⚰ Основной контент */}
       <div className="min-h-screen py-8 px-4 flex flex-col items-center">
         <div className="max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2">
-          {/* Левая часть: фото и QR */}
           <div className="bg-gray-100 flex flex-col items-center justify-center p-6">
             {user.photo_url ? (
               <img
@@ -96,8 +91,6 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
               </div>
             )}
           </div>
-
-          {/* Правая часть: текстовая информация */}
           <div className="flex flex-col justify-start p-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-5">{user.full_name}</h1>
 
@@ -159,8 +152,6 @@ export default function UserPage({ params }: { params: Promise<{ id: string }> }
             </div>
           </div>
         </div>
-
-        {/* Нижний блок */}
         <div className="w-full max-w-6xl bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Описание</h2>
