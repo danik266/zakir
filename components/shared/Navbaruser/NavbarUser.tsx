@@ -98,8 +98,7 @@ const NavbarUser: React.FC = () => {
         ) : (
           <Button
             onClick={() => router.push("/sign-in")}
-            className="bg-white text-[#48887B] hover:bg-gray-200 text-sm md:text-base px-3 py-1"
-          >
+            className="bg-white text-[#48887B] hover:bg-gray-200 text-sm md:text-base px-3 py-1">
             Войти
           </Button>
         )}
