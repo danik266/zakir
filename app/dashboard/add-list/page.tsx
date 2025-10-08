@@ -194,7 +194,6 @@ export default function AddList() {
               value={person.iin}
               onChange={handleChange}
               className="p-3 border border-[#48887B] rounded-3xl"
-              required
             />
             <textarea
               name="description"
