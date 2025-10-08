@@ -30,7 +30,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
       if (!error && userData) {
         setUser(userData);
-        const pageUrl = `${window.location.origin}/dashboard/user-list/${userData.id}`;
+        const pageUrl = `${window.location.origin}/dashboard/users-list/${userData.id}`;
         const qrDataUrl = await QRCode.toDataURL(pageUrl);
         setQrCodeUrl(qrDataUrl);
       }
