@@ -54,8 +54,6 @@ export default function AddList() {
 
     try {
       let photoUrl: string | null = null;
-
-      // === ЗАГРУЗКА ФОТО ===
       if (photo) {
         const cleanName = photo.name
           .replace(/[^\w.-]/g, "_")
@@ -78,8 +76,6 @@ export default function AddList() {
         photoUrl =
           "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/nophoto.jpg";
       }
-
-      // === ДОБАВЛЕНИЕ СТРАНИЦЫ В БАЗУ ===
       const { data, error: insertError } = await supabase
         .from("memorials")
         .insert([{ ...person, photo_url: photoUrl }])
@@ -91,12 +87,8 @@ export default function AddList() {
         setMessage("Ошибка при добавлении страницы");
         return;
       }
-
-      // === СОЗДАНИЕ QR-КОДА ===
-      const qrUrl = `${window.location.origin}/user/${data.id}`;
+      const qrUrl = `${window.location.origin}/users-list/${data.id}`;
       const qrCodeDataUrl = await QRCode.toDataURL(qrUrl);
-
-      // === ЗАГРУЗКА QR В SUPABASE STORAGE ===
       const qrBlob = await (await fetch(qrCodeDataUrl)).blob();
       const qrFileName = `qr_${data.id}.png`;
 
@@ -108,15 +100,13 @@ export default function AddList() {
         console.error("Ошибка загрузки QR:", qrUploadError);
       } else {
         const qrCodeUrl = `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${qrFileName}`;
-
-        // === ОБНОВЛЕНИЕ ЗАПИСИ С ССЫЛКОЙ НА QR ===
         await supabase
           .from("memorials")
           .update({ qr_code_url: qrCodeUrl })
           .eq("id", data.id);
       }
 
-      setMessage("✅ Ваша страница успешно добавлена и QR-код создан!");
+      setMessage("Ваша страница успешно добавлена!");
       setFormData({
         full_name: "",
         iin: "",

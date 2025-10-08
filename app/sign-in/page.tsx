@@ -58,7 +58,6 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f7f9f8] to-[#d6e8e3] flex flex-col md:flex-row justify-center items-center px-4 py-10 md:py-0 gap-8 md:gap-20">
-      {/* Левая часть (форма) */}
       <Card className="w-full max-w-[400px] md:max-w-[500px] border-none shadow-lg rounded-2xl bg-white">
         <CardHeader className="text-center">
           <Image
@@ -151,7 +150,6 @@ const SignIn = () => {
         </CardFooter>
       </Card>
 
-      {/* Правая часть (картинка) */}
       <div className="hidden md:flex">
         <Image
           src={frame}
@@ -162,8 +160,6 @@ const SignIn = () => {
           priority
         />
       </div>
-
-      {/* Попап при успешном входе */}
       {isOpen && (
         <div className="fixed inset-0 z-[9999] flex justify-center items-center bg-black/30">
           <div className="bg-white rounded-xl p-6 w-80 shadow-2xl text-center">
