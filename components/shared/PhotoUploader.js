@@ -1,31 +1,30 @@
-import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient'; // проверь путь
+"use client";
+import { useState } from "react";
+import Image from "next/image"; // ✅ используем next/image
+import { supabase } from "@/lib/supabaseClient"; // ✅ путь ок, если папка "lib" в корне
 
 export default function PhotoUploader({ onUpload }) {
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedImage(URL.createObjectURL(file));
-
       setUploading(true);
 
       const fileName = `${Date.now()}-${file.name}`;
 
-      const { error } = await supabase.storage
-        .from('avatars') // твой bucket
-        .upload(fileName, file);
+      const { error } = await supabase.storage.from("avatars").upload(fileName, file);
 
       if (error) {
-        console.error('Ошибка загрузки:', error.message);
+        console.error("Ошибка загрузки:", error.message);
         setUploading(false);
         return;
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from('avatars')
+        .from("avatars")
         .getPublicUrl(fileName);
 
       if (publicUrlData?.publicUrl) {
@@ -37,37 +36,36 @@ export default function PhotoUploader({ onUpload }) {
   };
 
   return (
-    <div style={{ textAlign: 'center', position: 'relative' }}>
+    <div className="text-center relative">
       <label
         htmlFor="fileInput"
-        style={{
-          cursor: uploading ? 'not-allowed' : 'pointer',
-          display: 'inline-block',
-          padding: '20px',
-          border: '2px dashed #ccc',
-          borderRadius: '8px',
-          opacity: uploading ? 0.6 : 1,
-          pointerEvents: uploading ? 'none' : 'auto',
-        }}
+        className={`inline-block p-5 border-2 border-dashed rounded-lg transition ${
+          uploading
+            ? "opacity-60 cursor-not-allowed border-gray-300"
+            : "cursor-pointer hover:border-[#48887B]"
+        }`}
       >
-        <div style={{ fontSize: '50px' }}>📷</div>
-        <div>{uploading ? 'Загрузка...' : 'Нажми чтобы выбрать фото'}</div>
+        <div className="text-5xl">📷</div>
+        <div>{uploading ? "Загрузка..." : "Нажми, чтобы выбрать фото"}</div>
       </label>
+
       <input
         id="fileInput"
         type="file"
         accept="image/*"
-        style={{ display: 'none' }}
+        className="hidden"
         onChange={handleImageChange}
         disabled={uploading}
       />
 
       {selectedImage && (
-        <div style={{ marginTop: '20px' }}>
-          <img
+        <div className="mt-5 flex justify-center">
+          <Image
             src={selectedImage}
             alt="Выбранное фото"
-            style={{ maxWidth: '300px', borderRadius: '8px' }}
+            width={300}
+            height={300}
+            className="rounded-lg object-cover"
           />
         </div>
       )}
