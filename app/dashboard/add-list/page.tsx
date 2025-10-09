@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import * as QRCode from "qrcode";
 
-
 export default function AddList() {
   const [person, setFormData] = useState({
     full_name: "",
@@ -76,6 +75,7 @@ export default function AddList() {
         photoUrl =
           "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/nophoto.jpg";
       }
+
       const { data, error: insertError } = await supabase
         .from("memorials")
         .insert([{ ...person, photo_url: photoUrl }])
@@ -87,6 +87,7 @@ export default function AddList() {
         setMessage("Ошибка при добавлении страницы");
         return;
       }
+
       const qrUrl = `${window.location.origin}/users-list/${data.id}`;
       const qrCodeDataUrl = await QRCode.toDataURL(qrUrl);
       const qrBlob = await (await fetch(qrCodeDataUrl)).blob();
@@ -96,9 +97,7 @@ export default function AddList() {
         .from("photos")
         .upload(qrFileName, qrBlob);
 
-      if (qrUploadError) {
-        console.error("Ошибка загрузки QR:", qrUploadError);
-      } else {
+      if (!qrUploadError) {
         const qrCodeUrl = `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${qrFileName}`;
         await supabase
           .from("memorials")
@@ -128,18 +127,18 @@ export default function AddList() {
   };
 
   return (
-    <div>
-      <h1 className="text-3xl text-[#48887B] font-bold mt-10 mb-8 text-center">
+    <div className="px-4 sm:px-6 lg:px-20 py-10">
+      <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
         Создайте страницу
       </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-[1190px] mx-auto flex flex-col gap-10 mt-10"
+        className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto"
       >
-        <div className="flex justify-center gap-5">
-          <div className="flex flex-col items-center gap-5">
-            <div className="border-2 border-[#48887B] w-[600px] 
-             h-[600px] relative rounded-xl flex justify-center items-center overflow-hidden">
+        <div className="flex flex-col lg:flex-row justify-center gap-8">
+          {/* Фото */}
+          <div className="flex flex-col items-center gap-5 w-full lg:w-[50%]">
+            <div className="border-2 border-[#48887B] w-full max-w-[600px] aspect-square relative rounded-xl flex justify-center items-center overflow-hidden">
               {photoPreview ? (
                 <>
                   <Image
@@ -178,14 +177,15 @@ export default function AddList() {
             <p>Нажмите, чтобы добавить фото</p>
           </div>
 
-          <div className="w-[60%] flex flex-col gap-5">
+          {/* Данные */}
+          <div className="flex flex-col gap-5 w-full lg:w-[50%]">
             <input
               type="text"
               name="full_name"
               placeholder="ФИО"
               value={person.full_name}
               onChange={handleChange}
-              className="p-3 border border-[#48887B] rounded-3xl"
+              className="p-3 border border-[#48887B] rounded-3xl w-full"
               required
             />
             <input
@@ -194,7 +194,7 @@ export default function AddList() {
               placeholder="ИИН"
               value={person.iin}
               onChange={handleChange}
-              className="p-3 border border-[#48887B] rounded-3xl"
+              className="p-3 border border-[#48887B] rounded-3xl w-full"
             />
             <textarea
               name="description"
@@ -210,7 +210,7 @@ export default function AddList() {
               name="birth_date"
               value={person.birth_date}
               onChange={handleChange}
-              className="p-3 border border-[#48887B] rounded-3xl"
+              className="p-3 border border-[#48887B] rounded-3xl w-full"
               required
             />
             <label>Дата смерти:</label>
@@ -219,7 +219,7 @@ export default function AddList() {
               name="death_date"
               value={person.death_date}
               onChange={handleChange}
-              className="p-3 border border-[#48887B] rounded-3xl"
+              className="p-3 border border-[#48887B] rounded-3xl w-full"
               required
             />
             <div className="relative w-full">
@@ -245,21 +245,17 @@ export default function AddList() {
                 stroke="currentColor"
                 strokeWidth={2}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
         </div>
 
-        <h1 className="text-3xl text-[#48887B] font-bold mb-8 text-center">
+        <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
           Место захоронения
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <input
             type="text"
             name="country"
