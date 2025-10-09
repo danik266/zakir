@@ -154,7 +154,7 @@ export default function UserPage({ params }: { params: { id: string } }) {
               <Link
                 href="/dashboard/users-list"
                 className="text-[#48887B] text-lg hover:underline">
-                Вернуться к страницам
+                 ← Вернуться к страницам
               </Link>
             </div>
           </div>
