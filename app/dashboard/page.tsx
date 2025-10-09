@@ -34,7 +34,7 @@ export default function Dashboard() {
        <>
   <div className="max-w-5xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
     <h1 className="text-3xl text-[#48887B] font-bold mt-3 mb-8 text-center">
-        Добропожаловать!
+        Добро пожаловать!
       </h1>
     <p className="mb-8 text-gray-700 text-[17px] text-center">
       Этот сайт создан для сохранения памяти о близких и значимых людях в мусульманской традиции.

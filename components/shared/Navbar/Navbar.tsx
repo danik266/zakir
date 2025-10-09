@@ -12,6 +12,7 @@ const Navbar = () => {
     <div className="w-[100%] z-1 bg-white fixed px-10 p-5 mx-auto flex justify-between items-center pt-5 shadow-md">
         <div className="flex items-center gap-2">
             <Image
+            className='md:w-20 md:h-20'
                 width={70}
                 height={70}
                 alt='Zakir'
@@ -19,6 +20,7 @@ const Navbar = () => {
                 />
                 <span>
                     <Image
+                        className=''
                         width={100}
                         height={70}
                         alt='zakir'

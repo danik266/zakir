@@ -5,8 +5,8 @@ const Footer = () => {
   return (
     <>
         
-        <footer className='footer'>
-            <div className='footer-sections p-6'>
+        <footer className='footer mt-180 md:mt-0'>
+            <div className='footer-sections p-6 flex items-center flex-col md:flex md:flex-row'>
                 <div>
                     <h3>Личный кабинет</h3>
                     <ul>

@@ -138,7 +138,8 @@ export default function AddList() {
       >
         <div className="flex justify-center gap-5">
           <div className="flex flex-col items-center gap-5">
-            <div className="border-2 border-[#48887B] w-[600px] h-[600px] relative rounded-xl flex justify-center items-center overflow-hidden">
+            <div className="border-2 border-[#48887B] w-[600px] 
+             h-[600px] relative rounded-xl flex justify-center items-center overflow-hidden">
               {photoPreview ? (
                 <>
                   <Image

@@ -13,7 +13,7 @@ const Advant = () => {
     <>
     <div className="mt-45 bg-amber-50 h-[100vh]">
       <h2 className='text-6xl text-center text-[#48887B] mb-30'>Преимущества</h2>
-      <div className="flex justify-center gap-15">
+      <div className="md:flex md:flex-row md:justify-center flex flex-col items-center gap-8 md:gap-15">
         <Card
           img={lupa}
           title='Поиск людей'
