@@ -104,8 +104,7 @@ const deleteMemorial = async (id: string) => {
                 )}
                 <button
       onClick={() => deleteMemorial(memorial.id)}
-      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition self-start"
-    >
+      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition self-start">
       Удалить
     </button>
               </div>
