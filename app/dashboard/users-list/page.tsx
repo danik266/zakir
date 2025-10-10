@@ -19,7 +19,6 @@ interface Memorial {
 const List = () => {
   const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchMemorials = async () => {
@@ -52,7 +51,7 @@ const List = () => {
     fetchMemorials();
     checkAdmin();
   }, []);
-
+  
   const handleDelete = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить эту запись?")) return;
 
@@ -65,6 +64,27 @@ const List = () => {
       setMemorials(memorials.filter((m) => m.id !== id));
     }
   };
+  const [isAdmin, setIsAdmin] = useState(false);
+
+useEffect(() => {
+  const checkAdmin = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("admin")
+      .eq("id", user.id)
+      .single();
+
+    console.log("Текущий профиль:", profile);
+    if (profile?.admin === true) {
+      setIsAdmin(true);
+    }
+  };
+
+  checkAdmin();
+}, []);
 
   return (
     <div className="max-w-5xl mx-auto p-6">
