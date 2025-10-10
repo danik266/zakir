@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import svg from "../../../public/Group 7 (1).svg";
-import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import * as QRCode from "qrcode";
 
@@ -21,9 +20,11 @@ export default function AddList() {
     address: "",
     place_url: "",
   });
+
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [isClicked, setIsClicked] = useState(false); // 👈 флаг одного клика
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -37,9 +38,7 @@ export default function AddList() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setPhoto(file);
-    if (file) {
-      setPhotoPreview(URL.createObjectURL(file));
-    }
+    if (file) setPhotoPreview(URL.createObjectURL(file));
   };
 
   const handleRemovePhoto = () => {
@@ -49,10 +48,15 @@ export default function AddList() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 🚫 если кнопка уже нажата — выходим
+    if (isClicked) return;
+    setIsClicked(true); // 👈 блокируем кнопку навсегда
     setMessage("Добавление...");
 
     try {
       let photoUrl: string | null = null;
+
       if (photo) {
         const cleanName = photo.name
           .replace(/[^\w.-]/g, "_")
@@ -64,11 +68,7 @@ export default function AddList() {
           .from("photos")
           .upload(fileName, photo);
 
-        if (uploadError) {
-          console.error("Ошибка загрузки фото:", uploadError);
-          setMessage("Ошибка загрузки фото");
-          return;
-        }
+        if (uploadError) throw uploadError;
 
         photoUrl = `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${fileName}`;
       } else {
@@ -82,12 +82,9 @@ export default function AddList() {
         .select()
         .single();
 
-      if (insertError) {
-        console.error("Ошибка вставки:", insertError);
-        setMessage("Ошибка при добавлении страницы");
-        return;
-      }
+      if (insertError) throw insertError;
 
+      // QR-код
       const qrUrl = `${window.location.origin}/users-list/${data.id}`;
       const qrCodeDataUrl = await QRCode.toDataURL(qrUrl);
       const qrBlob = await (await fetch(qrCodeDataUrl)).blob();
@@ -105,24 +102,10 @@ export default function AddList() {
           .eq("id", data.id);
       }
 
-      setMessage("Ваша страница успешно добавлена!");
-      setFormData({
-        full_name: "",
-        iin: "",
-        description: "",
-        birth_date: "",
-        death_date: "",
-        religion: "",
-        country: "",
-        city: "",
-        address: "",
-        place_url: "",
-      });
-      setPhoto(null);
-      setPhotoPreview(null);
+      setMessage("✅ Ваша страница успешно добавлена!");
     } catch (err) {
       console.error(err);
-      setMessage("Ошибка при добавлении страницы");
+      setMessage("❌ Ошибка при добавлении страницы");
     }
   };
 
@@ -131,7 +114,7 @@ export default function AddList() {
       <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
         Создайте страницу
       </h1>
-      <form
+<form
         onSubmit={handleSubmit}
         className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto"
       >
@@ -295,12 +278,17 @@ export default function AddList() {
         </div>
 
         <div className="flex justify-center">
-          <Button
+          <button
             type="submit"
-            className="bg-[#48887B] px-10 py-5 text-xl rounded-3xl"
+            disabled={isClicked}
+            className={`px-10 py-5 text-xl rounded-3xl transition text-white ${
+              isClicked
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#48887B] hover:bg-[#3a6f63]"
+            }`}
           >
-            Добавить
-          </Button>
+            {isClicked ? "Добавлено..." : "Добавить"}
+          </button>
         </div>
       </form>
 
