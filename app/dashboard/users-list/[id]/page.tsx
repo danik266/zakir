@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import QRCode from "qrcode";
-import { useParams, useRouter } from "next/navigation"; // ✅ добавлено useRouter
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import ReviewsSection from "./ReviewsSection";
 
 export default function UserPage() {
   const { id } = useParams();
-  const router = useRouter(); // ✅ для редиректа
+  const router = useRouter(); 
   const [user, setUser] = useState<any>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ export default function UserPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push("/register");
+        router.push("/sign-up");
       }
     };
 
