@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { use } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import QRCode from "qrcode";
 import Link from "next/link";
@@ -13,7 +12,18 @@ export default function UserPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+
+  const [selectedSurah, setSelectedSurah] = useState<string>("al-fatiha.mp3");
+  const [volume, setVolume] = useState<number>(0.5);
+
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const surahList = [
+    { name: "Аль-Фатиха", file: "al-fatiha.mp3" },
+    { name: "Аят Аль-курси", file: "ayatalkursi.mp3" },
+    { name: "Ыкылас", file: "ikhlas.mp3" },
+    { name: "Дуа", file: "dua.mp3" },
+  ];
 
   useEffect(() => {
     const checkAuthAndLoad = async () => {
@@ -53,6 +63,19 @@ export default function UserPage({ params }: { params: { id: string } }) {
     setIsPlaying(!isPlaying);
   };
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+      if (isPlaying) audioRef.current.play();
+    }
+  }, [selectedSurah]);
+
   if (loading) {
     return <div className="p-8 text-center text-gray-600">Загрузка...</div>;
   }
@@ -67,22 +90,50 @@ export default function UserPage({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <div className="flex items-center gap-2 p-4 bg-white rounded-xl shadow mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl shadow mb-6">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={isPlaying}
             onChange={togglePlay}
-            className="w-5 h-5 accent-green-600"
+            className="w-5 h-5 accent-[#48887b]"
           />
           <span className="text-gray-700 font-medium">
             {isPlaying ? "Остановить чтение Корана" : "Включить чтение Корана"}
           </span>
         </label>
+        <div className="flex items-center gap-3">
+          <label className="text-gray-700 font-medium">Сура:</label>
+          <select
+            value={selectedSurah}
+            onChange={(e) => setSelectedSurah(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#48887B]"
+          >
+            {surahList.map((s) => (
+              <option key={s.file} value={s.file}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-gray-700 font-medium">Громкость:</label>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="w-32 accent-[#48887b]"
+          />
+        </div>
+
         <audio ref={audioRef} loop preload="auto" autoPlay>
-          <source src="/../audio/Mishary_001.mp3" type="audio/mpeg" />
+          <source src={`/audio/${selectedSurah}`} type="audio/mpeg" />
         </audio>
       </div>
+
       <div className="min-h-screen py-8 px-4 flex flex-col items-center">
         <div className="max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2">
           <div className=" flex items-center justify-center p-6">

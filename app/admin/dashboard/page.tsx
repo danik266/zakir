@@ -103,10 +103,10 @@ const deleteMemorial = async (id: string) => {
                   <p className="text-gray-800 font-medium mb-4">{memorial.wordsinmemorial}</p>
                 )}
                 <button
-      onClick={() => deleteMemorial(memorial.id)}
-      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition self-start">
-      Удалить
-    </button>
+                onClick={() => deleteMemorial(memorial.id)}
+                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition self-start">
+                Удалить
+              </button>
               </div>
             ))
           )}
