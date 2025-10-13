@@ -55,15 +55,13 @@ const NavbarUser: React.FC = () => {
 
   return (
     <div className="w-full z-10 bg-white p-4 md:p-5 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
-      {/* Логотип */}
+
       <div className="flex items-center gap-2">
         <Image width={50} height={50} alt="Zakir logo" src={logo} />
         <span>
           <Image width={90} height={50} alt="Zakir text" src={zakir} />
         </span>
       </div>
-
-      {/* Меню навигации */}
       <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-2 md:mt-0">
         {path.map((item, index) => {
           const isActive = pathname === item.path;
@@ -79,10 +77,16 @@ const NavbarUser: React.FC = () => {
             </Button>
           );
         })}
+        <Button
+          onClick={() => router.push("/donate")}
+          className="px-4 py-2 text-sm md:text-base bg-white text-black hover:bg-[#48887B] hover:text-white"
+        >
+          Пожертвовать
+        </Button>
       </div>
 
-      {/* Пользователь */}
       <div className="mt-2 md:mt-0 flex flex-col md:flex-row gap-2 md:gap-3 items-center">
+       
         {user ? (
           <>
             <span className="text-sm">
@@ -98,7 +102,8 @@ const NavbarUser: React.FC = () => {
         ) : (
           <Button
             onClick={() => router.push("/sign-in")}
-            className="bg-white text-[#48887B] hover:bg-gray-200 text-sm md:text-base px-3 py-1">
+            className="bg-white text-[#48887B] hover:bg-gray-200 text-sm md:text-base px-3 py-1"
+          >
             Войти
           </Button>
         )}

@@ -29,48 +29,48 @@ export default function UserPage() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const { data, error } = await supabase
-        .from("memorials")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const { data: memorialData, error } = await supabase
+  .from("memorials")
+  .select("*")
+  .eq("id", id)
+  .single();
 
-      if (error) {
-        console.error("Ошибка загрузки:", error);
-        setLoading(false);
-        return;
-      }
+if (error) {
+  console.error("Ошибка загрузки:", error);
+  setLoading(false);
+  return;
+}
 
-      if (data) {
-        let photos: string[] = [];
+if (memorialData) {
+  let photos: string[] = [];
 
-        if (Array.isArray(data.photo_url)) {
-          photos = data.photo_url;
-        } else if (typeof data.photo_url === "string") {
-          try {
-            const parsed = JSON.parse(data.photo_url);
-            photos = Array.isArray(parsed) ? parsed : [parsed];
-          } catch {
-            photos = [data.photo_url];
-          }
-        }
+  if (Array.isArray(memorialData.photo_url)) {
+    photos = memorialData.photo_url;
+  } else if (typeof memorialData.photo_url === "string") {
+    try {
+      const parsed = JSON.parse(memorialData.photo_url);
+      photos = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      photos = [memorialData.photo_url];
+    }
+  }
 
-        photos = photos.map((url) =>
-          url && !url.startsWith("http")
-            ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${url}`
-            : url.startsWith("https:/") && !url.startsWith("https://")
-            ? url.replace("https:/", "https://")
-            : url
-        );
+  photos = photos.map((url) =>
+    url && !url.startsWith("http")
+      ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${url}`
+      : url.startsWith("https:/") && !url.startsWith("https://")
+      ? url.replace("https:/", "https://")
+      : url
+  );
 
-        if (!photos.length) photos = ["/nophoto.jpg"];
+  if (!photos.length) photos = ["/nophoto.jpg"];
 
-        setUser({ ...data, photos });
+  setUser({ ...memorialData, photos });
 
-        const pageUrl = `${window.location.origin}/dashboard/users-list/${data.id}`;
-        const qr = await QRCode.toDataURL(pageUrl);
-        setQrCodeUrl(qr);
-      }
+  const pageUrl = `${window.location.origin}/dashboard/users-list/${memorialData.id}`;
+  const qr = await QRCode.toDataURL(pageUrl);
+  setQrCodeUrl(qr);
+}
 
       setLoading(false);
     };
@@ -124,7 +124,6 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen py-5 px-4">
-      {/* Аудио и управление */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl shadow mb-10 max-w-5xl mx-auto">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -168,10 +167,7 @@ export default function UserPage() {
           <source src={`/audio/${selectedSurah}`} type="audio/mpeg" />
         </audio>
       </div>
-
-      {/* Основной блок с фото и данными */}
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 gap-8 p-8">
-        {/* Фото */}
         <div className="relative flex justify-center items-center flex-col">
           <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl shadow-lg bg-gray-100 flex justify-center items-center">
             <AnimatePresence mode="wait">
@@ -211,8 +207,6 @@ export default function UserPage() {
             Құран бағыштау за <b>{user.full_name}</b>
           </Link>
         </div>
-
-        {/* Данные */}
         <div className="flex flex-col justify-start">
           <h1 className="text-4xl font-bold text-gray-900 mb-5">{user.full_name}</h1>
           <p className="mb-2">
@@ -257,8 +251,6 @@ export default function UserPage() {
           )}
         </div>
       </div>
-
-      {/* Описание и слова памяти */}
       <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">Описание</h2>
