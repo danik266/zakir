@@ -7,91 +7,128 @@ import { supabase } from "../../../lib/supabaseClient";
 interface Memorial {
   id: string;
   full_name: string;
-  iin: string;
-  description: string;
-  birth_date: string;
-  death_date: string;
-  photo_url: string | null;
-  created_at?: string;
+  description?: string;
+  birth_date?: string;
+  death_date?: string;
+  photo_url?: string | string[] | null;
+  photos?: string[];
 }
 
 const List = () => {
   const [memorials, setMemorials] = useState<Memorial[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [debug, setDebug] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMemorials = async () => {
       setLoading(true);
-      const { data, error, count, status } = await supabase
+      const { data, error } = await supabase
         .from("memorials")
-        .select("*", { count: "exact" })
+        .select("*")
         .order("created_at", { ascending: false });
 
-      console.log("Supabase response:", { data, error, count, status });
-      setDebug({ data, error, count, status });
-
       if (error) {
-        console.error("Ошибка при загрузке memorials:", error);
-      } else {
-        setMemorials(data ?? []);
+        console.error("Ошибка при загрузке:", error);
+        setLoading(false);
+        return;
       }
 
+      const baseUrl =
+        "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/";
+
+      const normalized = (data ?? []).map((item: any) => {
+        let photos: string[] = [];
+
+        if (Array.isArray(item.photo_url)) {
+          photos = item.photo_url;
+        } else if (typeof item.photo_url === "string") {
+          try {
+            const parsed = JSON.parse(item.photo_url);
+            photos = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            photos = [item.photo_url];
+          }
+        }
+
+        photos = photos
+          .filter(Boolean)
+          .map((url: string) =>
+            url.startsWith("http")
+              ? url.startsWith("https:/") && !url.startsWith("https://")
+                ? url.replace("https:/", "https://")
+                : url
+              : `${baseUrl}${url}`
+          );
+
+        return { ...item, photos };
+      });
+
+      setMemorials(normalized);
       setLoading(false);
     };
 
     fetchMemorials();
   }, []);
 
+  if (loading) return <div className="text-center mt-10">Загрузка...</div>;
+
   return (
-    
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-3xl text-[#48887B] font-bold mb-8 text-center">
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold text-[#48887B] mb-8 text-center">
         База захоронения
       </h1>
-      {loading ? (
-        <div className="text-center">Загрузка...</div>
-      ) : memorials.length === 0 ? (
-        <div className="text-center text-gray-600">
-          Пока нет добавленных людей
-        </div>
+
+      {memorials.length === 0 ? (
+        <div className="text-center text-gray-600">Пока нет добавленных людей</div>
       ) : (
-       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-  {memorials.map((person) => (
-    <li key={person.id}>
-      <Link
-        href={`/dashboard/users-list/${person.id}`}
-        className="max-h-[500px] block p-4 bg-white rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1">
-        {person.photo_url && (
-          <div className="w-[160px] h-[200px] mx-auto overflow-hidden rounded-lg border border-gray-300">
-            <img
-              src={person.photo_url}
-              alt={person.full_name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-      )}
-        <div className="text-center mt-3">
-          <h3 className="text-lg font-semibold">
-            {person.full_name}
-          </h3>
-          <p className="text-sm">
-            <span className="font-medium">Дата рождения:</span>{" "}
-            {person.birth_date
-              ? new Date(person.birth_date).toLocaleDateString("ru-RU")
-              : "-"}
-          </p>
-          <p className="text-sm">
-            <span className="font-medium">Дата смерти:</span>{" "}
-            {person.death_date
-              ? new Date(person.death_date).toLocaleDateString("ru-RU")
-              : "-"}
-          </p>
-        </div>
-      </Link>
-    </li>
-  ))}
-</ul>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+          {memorials.map((person) => {
+            const photo =
+              person.photos && person.photos.length > 0 ? person.photos[0] : null;
+            return (
+              <li key={person.id}>
+                <Link
+                  href={`/dashboard/users-list/${person.id}`}
+                  className="block p-4 bg-white rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
+                >
+                  <div className="w-[160px] h-[200px] mx-auto rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
+                    {photo ? (
+                      <img
+                        src={photo}
+                        alt={person.full_name}
+                        className="max-w-full max-h-full object-contain transition-transform duration-300 hover:scale-105"
+                        onError={(e) =>
+                          ((e.target as HTMLImageElement).src = "/nophoto.jpg")
+                        }
+                      />
+                    ) : (
+                      <div className="text-sm text-gray-400 text-center">
+                        Нет фото
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-center mt-3">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {person.full_name}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Дата рождения:</span>{" "}
+                      {person.birth_date
+                        ? new Date(person.birth_date).toLocaleDateString("ru-RU")
+                        : "-"}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Дата смерти:</span>{" "}
+                      {person.death_date
+                        ? new Date(person.death_date).toLocaleDateString("ru-RU")
+                        : "-"}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </div>
   );

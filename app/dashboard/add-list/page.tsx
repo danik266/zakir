@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import svg from "../../../public/Group 7 (1).svg";
 import { X } from "lucide-react";
-import * as QRCode from "qrcode";
 
 export default function AddList() {
   const [person, setFormData] = useState({
@@ -21,10 +20,11 @@ export default function AddList() {
     place_url: "",
   });
 
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [message, setMessage] = useState("");
-  const [isClicked, setIsClicked] = useState(false); // 👈 флаг одного клика
+  const [isClicked, setIsClicked] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -34,78 +34,101 @@ export default function AddList() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
+  };
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-    setPhoto(file);
-    if (file) setPhotoPreview(URL.createObjectURL(file));
-  };
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
 
-  const handleRemovePhoto = () => {
-    setPhoto(null);
-    setPhotoPreview(null);
+    const newPreviews = files.map((f) => URL.createObjectURL(f));
+    setPhotos((prev) => [...prev, ...files]);
+    setPhotoPreviews((prev) => [...prev, ...newPreviews]);
+    e.currentTarget.value = "";
   };
-
+  const handleRemovePhoto = (index: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPhotoPreviews((prev) => {
+      const urlToRevoke = prev[index];
+      try {
+        URL.revokeObjectURL(urlToRevoke);
+      } catch {}
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+  useEffect(() => {
+    return () => {
+      photoPreviews.forEach((u) => {
+        try {
+          URL.revokeObjectURL(u);
+        } catch {}
+      });
+    };
+  }, []);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 🚫 если кнопка уже нажата — выходим
     if (isClicked) return;
-    setIsClicked(true); // 👈 блокируем кнопку навсегда
+    setIsClicked(true);
     setMessage("Добавление...");
 
     try {
-      let photoUrl: string | null = null;
+      let photoUrls: string[] = [];
 
-      if (photo) {
-        const cleanName = photo.name
-          .replace(/[^\w.-]/g, "_")
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
-        const fileName = `${Date.now()}_${cleanName}`;
+      if (photos.length > 0) {
+        for (const file of photos) {
+          const cleanName = file.name
+            .replace(/[^\w.-]/g, "_")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          const fileName = `${Date.now()}_${Math.random()
+            .toString(36)
+            .slice(2, 8)}_${cleanName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("photos")
-          .upload(fileName, photo);
+          const { error: uploadError } = await supabase.storage
+            .from("photos")
+            .upload(fileName, file);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-        photoUrl = `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${fileName}`;
+          const fileUrl = `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${fileName}`;
+          photoUrls.push(fileUrl);
+        }
       } else {
-        photoUrl =
-          "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/nophoto.jpg";
+        photoUrls = [
+          "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/nophoto.jpg",
+        ];
       }
-
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("memorials")
-        .insert([{ ...person, photo_url: photoUrl }])
-        .select()
-        .single();
+        .insert([{ ...person, photo_url: JSON.stringify(photoUrls) }]);
 
       if (insertError) throw insertError;
 
-      // QR-код
-      const qrUrl = `${window.location.origin}/users-list/${data.id}`;
-      const qrCodeDataUrl = await QRCode.toDataURL(qrUrl);
-      const qrBlob = await (await fetch(qrCodeDataUrl)).blob();
-      const qrFileName = `qr_${data.id}.png`;
-
-      const { error: qrUploadError } = await supabase.storage
-        .from("photos")
-        .upload(qrFileName, qrBlob);
-
-      if (!qrUploadError) {
-        const qrCodeUrl = `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${qrFileName}`;
-        await supabase
-          .from("memorials")
-          .update({ qr_code_url: qrCodeUrl })
-          .eq("id", data.id);
-      }
-
-      setMessage("✅ Ваша страница успешно добавлена!");
+      setMessage("Ваша страница успешно добавлена!");
+      setPhotos([]);
+      photoPreviews.forEach((u) => {
+        try {
+          URL.revokeObjectURL(u);
+        } catch {}
+      });
+      setPhotoPreviews([]);
+      setFormData({
+        full_name: "",
+        iin: "",
+        description: "",
+        birth_date: "",
+        death_date: "",
+        religion: "",
+        country: "",
+        city: "",
+        address: "",
+        place_url: "",
+      });
     } catch (err) {
       console.error(err);
-      setMessage("❌ Ошибка при добавлении страницы");
+      setMessage("Ошибка при добавлении страницы");
+      setIsClicked(false);
     }
   };
 
@@ -114,48 +137,57 @@ export default function AddList() {
       <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
         Создайте страницу
       </h1>
-<form
+
+      <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto"
       >
         <div className="flex flex-col lg:flex-row justify-center gap-8">
-          {/* Фото */}
           <div className="flex flex-col items-center gap-5 w-full lg:w-[50%]">
-            <div className="border-2 border-[#48887B] w-full max-w-[600px] aspect-square relative rounded-xl flex justify-center items-center overflow-hidden">
-              {photoPreview ? (
-                <>
-                  <Image
-                    src={photoPreview}
-                    alt="preview"
-                    fill
-                    className="object-cover rounded-xl"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemovePhoto}
-                    className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition"
-                    title="Удалить фото"
-                  >
-                    <X size={18} className="text-red-500" />
-                  </button>
-                </>
+            <div
+              onClick={openFileDialog}
+              className="border-2 border-[#48887B] w-full max-w-[600px] aspect-square relative rounded-xl flex justify-center items-center overflow-hidden cursor-pointer"
+            >
+              {photoPreviews.length > 0 ? (
+                <div className="w-full h-full p-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {photoPreviews.map((src, index) => (
+                    <div
+                      key={index}
+                      className="relative rounded-xl overflow-hidden border border-[#48887B] flex items-center justify-center"
+                    >
+                      <img
+                        src={src}
+                        alt={`preview-${index}`}
+                        className="object-cover w-full h-[120px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={(ev) => handleRemovePhoto(index, ev)}
+                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition"
+                        title="Удалить фото"
+                      >
+                        <X size={18} className="text-red-500" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <>
-                  <Image
-                    width={150}
-                    height={150}
-                    alt="SVG"
-                    src={svg}
-                    className="opacity-70"
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                </>
+                <Image
+                  width={150}
+                  height={150}
+                  alt="SVG"
+                  src={svg}
+                  className="opacity-70"
+                />
               )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
             </div>
             <p>Нажмите, чтобы добавить фото</p>
           </div>
@@ -233,7 +265,6 @@ export default function AddList() {
             </div>
           </div>
         </div>
-
         <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
           Место захоронения
         </h1>

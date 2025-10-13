@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState,useRef,useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 interface Memorial {
   id: string;
   full_name: string;
-  description: string;
-  birth_date: string;
-  death_date: string;
-  photo_url: string | null;
+  description?: string;
+  birth_date?: string;
+  death_date?: string;
+  photo_url?: string | string[] | null;
+  photos?: string[];
   country?: string;
   city?: string;
 }
@@ -31,17 +32,38 @@ export default function Search() {
     setErrorMessage("");
     setLoading(true);
 
-    if (!surname.trim() && !name.trim() && !location.trim()) {
-      setErrorMessage("Введите хотя бы фамилию, имя или местоположение для поиска");
+    if (!surname && !name && !location && !birthYear && !deathYear) {
+      setErrorMessage("Введите хотя бы одно поле для поиска");
       setResults([]);
       setLoading(false);
       return;
     }
+
     let query = supabase.from("memorials").select("*");
 
+    // По текстовым полям
     if (surname) query = query.ilike("full_name", `%${surname}%`);
     if (name) query = query.ilike("full_name", `%${name}%`);
-    if (location) query = query.or(`city.ilike.%${location}%,country.ilike.%${location}%`);
+    if (location)
+      query = query.or(`city.ilike.%${location}%,country.ilike.%${location}%`);
+
+if (birthYear) {
+  const year = birthYear.match(/^\d{4}$/)?.[0]; 
+  if (year) {
+    const start = `${year}-01-01`;
+    const end = `${year}-12-31`;
+    query = query.gte("birth_date", start).lte("birth_date", end);
+  }
+}
+
+if (deathYear) {
+  const year = deathYear.match(/^\d{4}$/)?.[0];
+  if (year) {
+    const start = `${year}-01-01`;
+    const end = `${year}-12-31`;
+    query = query.gte("death_date", start).lte("death_date", end);
+  }
+}
 
     const { data, error } = await query.order("created_at", { ascending: false });
 
@@ -49,33 +71,63 @@ export default function Search() {
       console.error("Ошибка поиска:", error);
       setErrorMessage("Ошибка поиска: " + error.message);
       setResults([]);
-    } else if (!data || data.length === 0) {
-      setErrorMessage("Ничего не найдено");
-      setResults([]);
-    } else {
-      setResults(data);
+      setLoading(false);
+      return;
     }
 
+    if (!data || data.length === 0) {
+      setErrorMessage("Ничего не найдено");
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    const baseUrl =
+      "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/";
+
+    const normalized = data.map((item: any) => {
+      let photos: string[] = [];
+
+      if (Array.isArray(item.photo_url)) {
+        photos = item.photo_url;
+      } else if (typeof item.photo_url === "string") {
+        try {
+          const parsed = JSON.parse(item.photo_url);
+          photos = Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+          photos = [item.photo_url];
+        }
+      }
+
+      photos = photos
+        .filter(Boolean)
+        .map((url: string) =>
+          url.startsWith("http")
+            ? url.startsWith("https:/") && !url.startsWith("https://")
+              ? url.replace("https:/", "https://")
+              : url
+            : `${baseUrl}${url}`
+        );
+
+      return { ...item, photos };
+    });
+
+    setResults(normalized);
     setLoading(false);
   }
+
   const [isPlaying, setIsPlaying] = useState(true);
-    const audioRef = useRef<HTMLAudioElement>(null);
-  
-    const togglePlay = () => {
-      const audio = audioRef.current;
-      if (!audio) return;
-  
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
-    };
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) audio.pause();
+    else audio.play();
+    setIsPlaying(!isPlaying);
+  };
+
   return (
-    
     <div className="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-md mt-8">
-      
       <h1 className="text-3xl text-[#48887B] font-bold mb-8 text-center">
         Поиск памятной страницы
       </h1>
@@ -141,54 +193,65 @@ export default function Search() {
           </p>
         </div>
       </div>
+
       <div className="flex items-center justify-center gap-4 mt-6">
         <Button
           onClick={handleSearch}
-          className="bg-[#48887B] cursor-pointer text-white px-8 py-2 rounded-full hover:bg-[#48887B] transition"
+          className="bg-[#48887B] cursor-pointer text-white px-8 py-2 rounded-full hover:bg-[#3d766b] transition"
         >
           {loading ? "Поиск..." : "Найти"}
         </Button>
       </div>
+
       {errorMessage && (
         <p className="text-red-500 text-sm mt-4 text-center">{errorMessage}</p>
       )}
-      <ul className="space-y-6 mt-8">
-        {results.map((person) => (
-          <li key={person.id}>
-            <Link
-              href={`/dashboard/users-list/${person.id}`}
-              className="block p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1 flex flex-col sm:flex-row items-start sm:items-center gap-4"
-            >
-              {person.photo_url && (
-                <img
-                  src={person.photo_url}
-                  alt={person.full_name}
-                  width={100}
-                  height={100}
-                  className="rounded-lg border border-gray-300 object-cover flex-shrink-0"
-                />
-              )}
-              <div className="text-left">
-                <h3 className="text-lg font-semibold">{person.full_name}</h3>
-                <p className="text-sm">
-                  <span className="font-medium">Место захоронения: </span>{person.country}
+
+      <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+        {results.map((person) => {
+          const photo =
+            person.photos && person.photos.length > 0
+              ? person.photos[0]
+              : "/nophoto.jpg";
+
+          return (
+            <li key={person.id}>
+              <Link
+                href={`/dashboard/users-list/${person.id}`}
+                className="block p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1 text-center"
+              >
+                <div className="w-[160px] h-[200px] mx-auto rounded-lg border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <img
+                    src={photo}
+                    alt={person.full_name}
+                    className="max-w-full max-h-full object-contain transition-transform duration-300 hover:scale-105"
+                    onError={(e) =>
+                      ((e.target as HTMLImageElement).src = "/nophoto.jpg")
+                    }
+                  />
+                </div>
+
+                <h3 className="text-lg font-semibold mt-3">{person.full_name}</h3>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Место захоронения:</span>{" "}
+                  {person.city || person.country || "—"}
                 </p>
-                <p className="text-sm">
-                  <span className="font-medium">Дата рождения: </span>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Дата рождения:</span>{" "}
                   {person.birth_date
                     ? new Date(person.birth_date).toLocaleDateString("ru-RU")
                     : "—"}
                 </p>
-                <p className="text-sm">
-                  <span className="font-medium">Дата смерти: </span>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Дата смерти:</span>{" "}
                   {person.death_date
                     ? new Date(person.death_date).toLocaleDateString("ru-RU")
                     : "—"}
                 </p>
-              </div>
-            </Link>
-          </li>
-        ))}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
