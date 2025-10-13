@@ -133,7 +133,7 @@
                   </Button>
                 );
               })}
-
+<ThemeToggle className"text-center"/>
               {user ? (
                 <>
                   <span className="w-full text-base px-4 py-2 block">
