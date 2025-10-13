@@ -55,12 +55,15 @@ export default function UserPage() {
           }
         }
 
-        // исправляем ссылки "https:/"
         photos = photos.map((url) =>
-          url.startsWith("https:/") && !url.startsWith("https://")
+          url && !url.startsWith("http")
+            ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${url}`
+            : url.startsWith("https:/") && !url.startsWith("https://")
             ? url.replace("https:/", "https://")
             : url
         );
+
+        if (!photos.length) photos = ["/nophoto.jpg"];
 
         setUser({ ...data, photos });
 
@@ -79,18 +82,13 @@ export default function UserPage() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
+    if (isPlaying) audio.pause();
+    else audio.play();
     setIsPlaying(!isPlaying);
   };
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-    }
+    if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
   useEffect(() => {
@@ -102,16 +100,12 @@ export default function UserPage() {
 
   const prevPhoto = () => {
     if (!user?.photos?.length) return;
-    setCurrentIndex((prev) =>
-      prev === 0 ? user.photos.length - 1 : prev - 1
-    );
+    setCurrentIndex((prev) => (prev === 0 ? user.photos.length - 1 : prev - 1));
   };
 
   const nextPhoto = () => {
     if (!user?.photos?.length) return;
-    setCurrentIndex((prev) =>
-      prev === user.photos.length - 1 ? 0 : prev + 1
-    );
+    setCurrentIndex((prev) => (prev === user.photos.length - 1 ? 0 : prev + 1));
   };
 
   if (loading)
@@ -127,8 +121,10 @@ export default function UserPage() {
         Мемориальная страница не найдена
       </div>
     );
+
   return (
     <div className="min-h-screen py-5 px-4">
+      {/* Аудио и управление */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl shadow mb-10 max-w-5xl mx-auto">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -172,104 +168,26 @@ export default function UserPage() {
           <source src={`/audio/${selectedSurah}`} type="audio/mpeg" />
         </audio>
       </div>
-<<<<<<< HEAD
+
+      {/* Основной блок с фото и данными */}
       <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 gap-8 p-8">
+        {/* Фото */}
         <div className="relative flex justify-center items-center flex-col">
-          {user.photos && user.photos.length > 0 ? (
-            <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl shadow-lg bg-gray-100 flex justify-center items-center">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={currentIndex}
-                  src={user.photos[currentIndex]}
-                  alt={`photo-${currentIndex}`}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  transition={{ duration: 0.4 }}
-                  className="max-w-full max-h-full object-contain rounded-2xl"
-=======
-
-      <div className="min-h-screen py-8 px-4 flex flex-col items-center">
-        <div className="max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2">
-          <div className=" flex items-center justify-center p-6">
-            {user.photo_url ? (
-              <div className="flex flex-col items-center gap-5">
-                <img
-                src={user.photo_url}
-                alt={user.full_name}
-                className="w-full max-w-md md:max-w-lg h-auto max-h-80 md:max-h-[600px] object-contain rounded-xl shadow-md mb-6"
+          <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl shadow-lg bg-gray-100 flex justify-center items-center">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentIndex}
+                src={user.photos[currentIndex]}
+                alt={`photo-${currentIndex}`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.4 }}
+                className="max-w-full max-h-full object-contain rounded-2xl"
+                onError={(e) => ((e.target as HTMLImageElement).src = "/nophoto.jpg")}
               />
-                <div className="">
-                  <Link
-                    href="/dashboard/dua"
-                    className="text-xl text-[#48887B] hover:border-b-2 pb-1
-                    hover:border-[#48887B]"
-                    >
-                     Құран бағыштау за <b>{user.full_name}</b>
-                    </Link>
-                </div>
-              </div>
-              
-            ) : (
-              <div className="w-full h-80 md:h-[600px] flex items-center justify-center text-gray-400 text-lg mb-6">
-                Нет фото
-              </div>
-            )}
+            </AnimatePresence>
           </div>
-          <div className="flex flex-col justify-start p-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-5">{user.full_name}</h1>
-
-            <p className="mb-2">
-              <span className="font-semibold">Дата рождения:</span> {user.birth_date || "—"}
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold">Дата смерти:</span> {user.death_date || "—"}
-            </p>
-            <p className="mb-5">
-              <span className="font-semibold">Религия:</span> {user.religion || "—"}
-            </p>
-
-            <h2 className="text-2xl font-semibold mb-3 text-gray-900">Место захоронения:</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-gray-800 mb-8">
-              <p>
-                <span className="font-semibold">Страна:</span> {user.country || "—"}
-              </p>
-              <p>
-                <span className="font-semibold">Город:</span> {user.city || "—"}
-              </p>
-              <p>
-                <span className="font-semibold">Адрес:</span> {user.address || "—"}
-              </p>
-              <p>
-                <span className="font-semibold">Ссылка:</span>{" "}
-                {user.place_url ? (
-                  <a
-                    href={user.place_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#48887B] hover:underline break-all"
-                  >
-                    Нажмите здесь
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </p>
-            </div>
-            {qrCodeUrl && (
-              <div className="flex flex-col items-center gap-2">
-                <img
-                  src={qrCodeUrl}
-                  alt="QR Code"
-                  className="w-36 h-36 border border-gray-300 rounded-lg shadow-sm bg-white p-2"
->>>>>>> 116057f822afd2ed05d664efa02b0234b53dff4d
-                />
-              </AnimatePresence>
-            </div>
-          ) : (
-            <div className="text-gray-400 text-lg text-center">Нет фото</div>
-          )}
-
           {user.photos?.length > 1 && (
             <>
               <button
@@ -286,7 +204,6 @@ export default function UserPage() {
               </button>
             </>
           )}
-
           <Link
             href="/dashboard/dua"
             className="mt-4 text-xl text-[#48887B] border-b-2 border-transparent pb-1 hover:border-[#48887B] transition"
@@ -294,6 +211,8 @@ export default function UserPage() {
             Құран бағыштау за <b>{user.full_name}</b>
           </Link>
         </div>
+
+        {/* Данные */}
         <div className="flex flex-col justify-start">
           <h1 className="text-4xl font-bold text-gray-900 mb-5">{user.full_name}</h1>
           <p className="mb-2">
@@ -322,9 +241,7 @@ export default function UserPage() {
                 >
                   Нажмите здесь
                 </a>
-              ) : (
-                "—"
-              )}
+              ) : "—"}
             </p>
           </div>
 
@@ -341,7 +258,7 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* 🕊️ Описание и слова памяти */}
+      {/* Описание и слова памяти */}
       <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">Описание</h2>
