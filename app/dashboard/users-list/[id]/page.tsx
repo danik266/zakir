@@ -144,10 +144,15 @@ export default function UserPage({ params }: { params: { id: string } }) {
                 alt={user.full_name}
                 className="w-full max-w-md md:max-w-lg h-auto max-h-80 md:max-h-[600px] object-contain rounded-xl shadow-md mb-6"
               />
-              <div className="">
-                <Link href="./dua" 
-                className="text-2xl text-[48887B]">Прочитать дуа за {user.full_name}</Link>
-              </div>
+                <div className="">
+                  <Link
+                    href="/dashboard/dua"
+                    className="text-xl text-[#48887B] hover:border-b-2 pb-1
+                    hover:border-[#48887B]"
+                    >
+                     Құран бағыштау за <b>{user.full_name}</b>
+                    </Link>
+                </div>
               </div>
               
             ) : (
