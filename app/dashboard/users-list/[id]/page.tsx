@@ -140,24 +140,24 @@ if (memorialData) {
 
   return (
     <div className="min-h-screen py-5 px-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl shadow mb-10 max-w-5xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl shadow mb-10 max-w-5xl mx-auto dark:bg-gray-800">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={isPlaying}
             onChange={togglePlay}
-            className="w-5 h-5 accent-[#48887b]"
+            className="w-5 h-5 accent-[#48887b] "
           />
-          <span className="text-gray-700 font-medium">
+          <span className="text-gray-700 font-medium dark:text-white">
             {isPlaying ? "Остановить чтение Корана" : "Включить чтение Корана"}
           </span>
         </label>
         <div className="flex items-center gap-3">
-          <label className="text-gray-700 font-medium">Сура:</label>
+          <label className="text-gray-700 font-medium dark:text-white">Сура:</label>
           <select
             value={selectedSurah}
             onChange={(e) => setSelectedSurah(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#48887B]"
+            className="border border-gray-300 rounded-lg px-3 py-1 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#48887B] dark:text-white"
           >
             {surahList.map((s) => (
               <option key={s.file} value={s.file}>
@@ -167,7 +167,7 @@ if (memorialData) {
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-gray-700 font-medium">Громкость:</label>
+          <label className="text-gray-700 font-medium dark:text-white">Громкость:</label>
           <input
             type="range"
             min="0"

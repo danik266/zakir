@@ -184,7 +184,7 @@ export default function AddList() {
       <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
         Создайте страницу
       </h1>
-      {userEmail === "danik269@vk.com" && "eldosnuktenov08@gmail.com" && "abilmansursatalganov78@gmail.com" && (
+      {["shampatov00@gmail.com", "eldosnuktenov08@gmail.com", "abilmansursatalganov78@gmail.com"].includes(userEmail ?? "") && (
         <div className="flex justify-center mb-6">
           <button
             type="button"
@@ -194,7 +194,8 @@ export default function AddList() {
             Автозаполнение
           </button>
         </div>
-      )}
+          )}
+
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto "
