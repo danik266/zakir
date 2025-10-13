@@ -85,7 +85,7 @@ const SignUp = () => {
             alt="zakir"
             src={zakir}
           />
-          <CardTitle className="text-2xl md:text-3xl font-semibold">
+          <CardTitle className="text-2xl md:text-3xl font-semibold text-black">
             Добро пожаловать!
           </CardTitle>
           <CardDescription className="text-[#48887B] text-sm md:text-base">
@@ -168,7 +168,7 @@ const SignUp = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col gap-5 text-center">
-          <span className="text-sm">
+          <span className="text-sm text-black">
             Уже есть аккаунт?
             <Link
               href="/sign-in"

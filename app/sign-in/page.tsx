@@ -67,7 +67,7 @@ const SignIn = () => {
             alt="zakir"
             src={zakir}
           />
-          <CardTitle className="text-2xl md:text-3xl font-semibold">
+          <CardTitle className="text-2xl md:text-3xl font-semibold text-black">
             Добро пожаловать!
           </CardTitle>
           <CardDescription className="text-[#48887B] text-sm md:text-base">
@@ -132,13 +132,13 @@ const SignIn = () => {
           <span className="text-sm">Или продолжить с</span>
           <Button
             variant="outline"
-            className="w-full flex items-center justify-center gap-2"
+            className="w-full flex items-center justify-center gap-2 text-black"
             onClick={handleGoogleSignIn}
           >
             <Image src={google} alt="google" width={24} height={24} />
             Google
           </Button>
-          <span className="text-sm">
+          <span className="text-sm text-black">
             Нет аккаунта?
             <Link
               href="/sign-up"
