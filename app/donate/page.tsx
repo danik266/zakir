@@ -5,8 +5,8 @@ import Navbaruser from "@/components/shared/Navbaruser/NavbarUser";
 const DonatePage = () => {
   const [copied, setCopied] = useState(false)
   const [copiedcard, setCopiedCard] = useState(false)
-  const telNumber = '+77771234567'
-  const cardNumber = '+777712222234567'
+  const telNumber = '+77770718277'
+  const cardNumber = '4400 4303 5467 0421'
 
   const handleCopy = async () => {
     try {
@@ -38,7 +38,7 @@ const DonatePage = () => {
       </p>
 
       <div className="bg-white p-6 rounded shadow-md flex flex-col items-center gap-4">
-        <p className="text-xl">Номер карты Kaspi:</p>
+        <p className="text-xl">Номер телефона Kaspi:</p>
         <p className="text-2xl font-mono">{telNumber}</p>
 
         <button

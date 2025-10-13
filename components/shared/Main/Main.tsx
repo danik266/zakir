@@ -27,7 +27,7 @@ const Main = () => {
       <div className="flex gap-3">
               <Button  
                 onClick={()=>router.push('/sign-up')}
-                className='hover:bg-[#48887B] hover:border hover:border-white hover:text-white p-5 bg-white text-[#48887B]'>Начать</Button>
+                className='border hover:bg-[#48887B] hover:border hover:border-white hover:text-white p-5 bg-white text-[#48887B]'>Начать</Button>
       </div>
     </div>
 
