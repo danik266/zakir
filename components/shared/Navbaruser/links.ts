@@ -8,5 +8,6 @@ export const path:Path[] = [
     {path:'/dashboard/add-list',name:'Добавить страницу'},
     {path:'/dashboard/search',name:'Поиск'},
     {path:'/dashboard/users-list',name:'Страницы'},
+    {path:'/dashboard/donate',name:'Пожертвовать'},
 ]
 

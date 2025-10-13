@@ -25,6 +25,33 @@ export default function AddList() {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [isClicked, setIsClicked] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+  setUserEmail(data.user.email ?? null);
+}
+
+    };
+    fetchUser();
+  }, []);
+
+  const handleAutofill = () => {
+    setFormData({
+      full_name: "Иванов Иван Иванович",
+      iin: "990101300123",
+      description: "Замечательный человек, добрый и отзывчивый. Помним и любим.",
+      birth_date: "1990-01-01",
+      death_date: "2020-05-15",
+      religion: "Христианство",
+      country: "Казахстан",
+      city: "Алматы",
+      address: "Улица Абая, 25",
+      place_url: "https://yandex.kz/maps/-/CDf7aK9Q",
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -34,9 +61,11 @@ export default function AddList() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const openFileDialog = () => {
     fileInputRef.current?.click();
   };
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
@@ -46,6 +75,7 @@ export default function AddList() {
     setPhotoPreviews((prev) => [...prev, ...newPreviews]);
     e.currentTarget.value = "";
   };
+
   const handleRemovePhoto = (index: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setPhotos((prev) => prev.filter((_, i) => i !== index));
@@ -57,6 +87,7 @@ export default function AddList() {
       return prev.filter((_, i) => i !== index);
     });
   };
+
   useEffect(() => {
     return () => {
       photoPreviews.forEach((u) => {
@@ -66,6 +97,7 @@ export default function AddList() {
       });
     };
   }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isClicked) return;
@@ -99,9 +131,24 @@ export default function AddList() {
           "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/nophoto.jpg",
         ];
       }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user;
+
+      const created_by_email = currentUser?.email || "Неизвестно";
+      const created_by_name =
+        currentUser?.user_metadata?.full_name ||
+        currentUser?.user_metadata?.display_name ||
+        created_by_email.split("@")[0] || "Без имени";
       const { error: insertError } = await supabase
         .from("memorials")
-        .insert([{ ...person, photo_url: JSON.stringify(photoUrls) }]);
+        .insert([{
+          ...person,
+          photo_url: JSON.stringify(photoUrls),
+          created_at: new Date().toISOString(),
+          created_by_email,
+          created_by_name,
+        }]);
 
       if (insertError) throw insertError;
 
@@ -133,16 +180,26 @@ export default function AddList() {
   };
 
   return (
-    <div className="px-4 sm:px-6 lg:px-20 py-10">
+    <div className="px-4 sm:px-6 lg:px-20 py-10 ">
       <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
         Создайте страницу
       </h1>
-
+      {userEmail === "danik269@vk.com" && "eldosnuktenov08@gmail.com" && "abilmansursatalganov78@gmail.com" && (
+        <div className="flex justify-center mb-6">
+          <button
+            type="button"
+            onClick={handleAutofill}
+            className="px-6 py-3 bg-[#FFD166] hover:bg-[#e6bc59] text-black font-medium rounded-3xl transition"
+          >
+            Автозаполнение
+          </button>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto"
+        className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto "
       >
-        <div className="flex flex-col lg:flex-row justify-center gap-8">
+        <div className="flex flex-col lg:flex-row justify-center gap-8 ">
           <div className="flex flex-col items-center gap-5 w-full lg:w-[50%]">
             <div
               onClick={openFileDialog}
@@ -191,8 +248,6 @@ export default function AddList() {
             </div>
             <p>Нажмите, чтобы добавить фото</p>
           </div>
-
-          {/* Данные */}
           <div className="flex flex-col gap-5 w-full lg:w-[50%]">
             <input
               type="text"
@@ -242,9 +297,8 @@ export default function AddList() {
                 name="religion"
                 value={person.religion}
                 onChange={handleChange}
-                className="p-3 border border-[#48887B] rounded-3xl bg-white text-gray-700 appearance-none w-full"
-                required
-              >
+                className="p-3 border border-[#48887B] rounded-3xl bg-white text-gray-700 appearance-none w-full dark:bg-gray-900 dark:text-white"
+                required>
                 <option value="">Выберите религию</option>
                 <option value="Ислам">Ислам</option>
                 <option value="Христианство">Христианство</option>
@@ -274,7 +328,7 @@ export default function AddList() {
             name="country"
             value={person.country}
             onChange={handleChange}
-            className="p-3 border border-[#48887B] rounded-3xl bg-white text-gray-700 appearance-none w-full"
+            className="p-3 border border-[#48887B] rounded-3xl bg-white text-gray-700 appearance-none w-full dark:bg-gray-900 dark:text-white"
             required>
             <option value="">Выберите страну</option>
             <option value="Австралия">Австралия</option>

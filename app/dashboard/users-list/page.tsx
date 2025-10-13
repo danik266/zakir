@@ -17,10 +17,13 @@ interface Memorial {
 const List = () => {
   const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const fetchMemorials = async () => {
+    const fetchData = async () => {
       setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
       const { data, error } = await supabase
         .from("memorials")
         .select("*")
@@ -66,8 +69,21 @@ const List = () => {
       setLoading(false);
     };
 
-    fetchMemorials();
+    fetchData();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Удалить эту запись?")) return;
+
+    const { error } = await supabase.from("memorials").delete().eq("id", id);
+    if (error) {
+      console.error("Ошибка при удалении:", error);
+    } else {
+      setMemorials((prev) => prev.filter((m) => m.id !== id));
+    }
+  };
+
+  const isAdmin = user?.email === "danik269@vk.com" && "eldosnuktenov08@gmail.com" && "abilmansursatalganov78@gmail.com";
 
   if (loading) return <div className="text-center mt-10">Загрузка...</div>;
 
@@ -80,17 +96,17 @@ const List = () => {
       {memorials.length === 0 ? (
         <div className="text-center text-gray-600">Пока нет добавленных людей</div>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 ">
           {memorials.map((person) => {
             const photo =
               person.photos && person.photos.length > 0 ? person.photos[0] : null;
             return (
-              <li key={person.id}>
+              <li key={person.id} className="relative">
                 <Link
                   href={`/dashboard/users-list/${person.id}`}
-                  className="block p-4 bg-white rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
+                  className="block p-4 bg-white rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1 dark:bg-gray-800"
                 >
-                  <div className="w-[160px] h-[200px] mx-auto rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
+                  <div className="w-[160px] h-[200px] mx-auto rounded-lg border border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden dark:bg-gray-900">
                     {photo ? (
                       <img
                         src={photo}
@@ -125,6 +141,14 @@ const List = () => {
                     </p>
                   </div>
                 </Link>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleDelete(person.id)}
+                    className="absolute top-2 border p-2 rounded-4xl right-2 translition-all text-red-500 hover:text-white hover:bg-red-500 text-xl font-bold"
+                    title="Удалить запись">
+                   ✕
+                  </button>
+                )}
               </li>
             );
           })}

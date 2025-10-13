@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   title: "Заки́р",
   description: " это ваше личное, виртуальное место для поминания, доступное в любое время и из любой точки мира.",
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{

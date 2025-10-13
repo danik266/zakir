@@ -3,22 +3,25 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../../../../lib/supabaseClient";
 import QRCode from "qrcode";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; // ✅ добавлено useRouter
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import ReviewsSection from "./ReviewsSection";
 
 export default function UserPage() {
   const { id } = useParams();
+  const router = useRouter(); // ✅ для редиректа
   const [user, setUser] = useState<any>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [selectedSurah, setSelectedSurah] = useState<string>("al-fatiha.mp3");
   const [volume, setVolume] = useState<number>(0.5);
   const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+
 
   const surahList = [
     { name: "Аль-Фатиха", file: "al-fatiha.mp3" },
@@ -26,6 +29,19 @@ export default function UserPage() {
     { name: "Ыкылас", file: "ikhlas.mp3" },
     { name: "Дуа", file: "dua.mp3" },
   ];
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push("/register");
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -167,9 +183,9 @@ if (memorialData) {
           <source src={`/audio/${selectedSurah}`} type="audio/mpeg" />
         </audio>
       </div>
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 gap-8 p-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 gap-8 p-8 dark:bg-gray-800 ">
         <div className="relative flex justify-center items-center flex-col">
-          <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl shadow-lg bg-gray-100 flex justify-center items-center">
+          <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl shadow-lg bg-gray-100 flex justify-center items-center dark:bg-gray-900" >
             <AnimatePresence mode="wait">
               <motion.img
                 key={currentIndex}
@@ -188,7 +204,7 @@ if (memorialData) {
             <>
               <button
                 onClick={prevPhoto}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition "
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -202,25 +218,25 @@ if (memorialData) {
           )}
           <Link
             href="/dashboard/dua"
-            className="mt-4 text-xl text-[#48887B] border-b-2 border-transparent pb-1 hover:border-[#48887B] transition"
+            className="mt-4 text-xl text-[#48887B] border-b-2 border-transparent pb-1 hover:border-[#48887B] transition dark:text-white"
           >
             Құран бағыштау за <b>{user.full_name}</b>
           </Link>
         </div>
         <div className="flex flex-col justify-start">
-          <h1 className="text-4xl font-bold text-gray-900 mb-5">{user.full_name}</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-5 dark:text-white">{user.full_name}</h1>
           <p className="mb-2">
-            <span className="font-semibold">Дата рождения:</span> {user.birth_date || "—"}
+            <span className="font-semibold dark:text-white">Дата рождения:</span> {user.birth_date || "—"}
           </p>
           <p className="mb-2">
-            <span className="font-semibold">Дата смерти:</span> {user.death_date || "—"}
+            <span className="font-semibold dark:text-white">Дата смерти:</span> {user.death_date || "—"}
           </p>
           <p className="mb-5">
-            <span className="font-semibold">Религия:</span> {user.religion || "—"}
+            <span className="font-semibold dark:text-white">Религия:</span> {user.religion || "—"}
           </p>
 
-          <h2 className="text-2xl font-semibold mb-3 text-gray-900">Место захоронения:</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-gray-800 mb-8">
+          <h2 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">Место захоронения:</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-gray-800 mb-8 dark:text-white">
             <p><span className="font-semibold">Страна:</span> {user.country || "—"}</p>
             <p><span className="font-semibold">Город:</span> {user.city || "—"}</p>
             <p><span className="font-semibold">Адрес:</span> {user.address || "—"}</p>
@@ -231,7 +247,7 @@ if (memorialData) {
                   href={user.place_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#48887B] hover:underline break-all"
+                  className="text-[#48887B] hover:underline break-all "
                 >
                   Нажмите здесь
                 </a>
@@ -246,29 +262,31 @@ if (memorialData) {
                 alt="QR Code"
                 className="w-36 h-36 border border-gray-300 rounded-lg shadow-sm bg-white p-2"
               />
-              <p className="text-sm text-gray-600">Сканируйте, чтобы открыть страницу</p>
+              <p className="text-sm text-gray-600 dark:text-white">Сканируйте, чтобы открыть страницу</p>
             </div>
           )}
+         <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-700 dark:bg-gray-800 dark:text-white">
+          <p><span className="font-semibold text-[#48887B]">Создал:</span> {user?.created_by_name || "Неизвестно"}</p>
+          <p><span className="font-semibold text-[#48887B]">Email:</span> {user?.created_by_email || "Не указан"}</p>
+          <p><span className="font-semibold text-[#48887B]">Дата создания:</span> {user?.created_at ? new Date(user.created_at).toLocaleString("ru-RU", { dateStyle: "long", timeStyle: "short" }) : "—"}</p>
+        </div>
         </div>
       </div>
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 dark:bg-gray-800 ">
         <div>
-          <h2 className="text-2xl font-semibold mb-4 text-gray-900">Описание</h2>
-          <div className="text-lg leading-relaxed text-gray-700 whitespace-pre-line break-words">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Описание</h2>
+          <div className="text-lg leading-relaxed text-gray-700 whitespace-pre-line break-words dark:text-white">
             {user.description || "Нет описания"}
           </div>
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold mb-4 text-gray-900">Слова памяти</h2>
-          <div className="bg-gray-50 border-l-4 border-[#48887B] p-5 rounded-xl shadow-sm italic text-gray-700 leading-relaxed">
-            {user.wordsinmemorial ||
-              "Этот человек был очень добрым и светлым. Его память останется в наших сердцах."}
-          </div>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white ">Слова памяти</h2>
+            <ReviewsSection memorialId={id as string} />
         </div>
       </div>
 
-      <div className="text-center mt-10">
+      <div className="text-center mt-10 ">
         <Link href="/dashboard/users-list" className="text-[#48887B] hover:underline text-lg">
           ← Вернуться к списку
         </Link>

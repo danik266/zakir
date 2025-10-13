@@ -127,13 +127,13 @@ if (deathYear) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-md mt-8">
+    <div className="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-md mt-8 dark:bg-gray-800 " >
       <h1 className="text-3xl text-[#48887B] font-bold mb-8 text-center">
         Поиск памятной страницы
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left mb-4 ">
         <div>
-          <label className="block text-gray-700 mb-1">Фамилия</label>
+          <label className="block text-gray-700 mb-1 dark:text-white">Фамилия</label>
           <input
             type="text"
             value={surname}
@@ -142,7 +142,7 @@ if (deathYear) {
           />
         </div>
         <div>
-          <label className="block text-gray-700 mb-1">Имя</label>
+          <label className="block text-gray-700 mb-1 dark:text-white">Имя</label>
           <input
             type="text"
             value={name}
@@ -151,7 +151,7 @@ if (deathYear) {
           />
         </div>
         <div>
-          <label className="block text-gray-700 mb-1">Отчество</label>
+          <label className="block text-gray-700 mb-1 dark:text-white">Отчество</label>
           <input
             type="text"
             value={patronymic}
@@ -163,7 +163,7 @@ if (deathYear) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
         <div>
-          <label className="block text-gray-700 mb-1">Год рождения</label>
+          <label className="block text-gray-700 mb-1 dark:text-white">Год рождения</label>
           <input
             type="text"
             value={birthYear}
@@ -172,7 +172,7 @@ if (deathYear) {
           />
         </div>
         <div>
-          <label className="block text-gray-700 mb-1">Год смерти</label>
+          <label className="block text-gray-700 mb-1 dark:text-white">Год смерти</label>
           <input
             type="text"
             value={deathYear}
@@ -181,7 +181,7 @@ if (deathYear) {
           />
         </div>
         <div>
-          <label className="block text-gray-700 mb-1">Расположение</label>
+          <label className="block text-gray-700 mb-1 dark:text-white">Расположение</label>
           <input
             type="text"
             value={location}
@@ -197,7 +197,7 @@ if (deathYear) {
       <div className="flex items-center justify-center gap-4 mt-6">
         <Button
           onClick={handleSearch}
-          className="bg-[#48887B] cursor-pointer text-white px-8 py-2 rounded-full hover:bg-[#3d766b] transition"
+          className="bg-[#48887B] cursor-pointer text-white px-8 py-2 rounded-full hover:bg-[#3d766b] transition "
         >
           {loading ? "Поиск..." : "Найти"}
         </Button>
@@ -218,9 +218,9 @@ if (deathYear) {
             <li key={person.id}>
               <Link
                 href={`/dashboard/users-list/${person.id}`}
-                className="block p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1 text-center"
+                className="block p-4 bg-gray-50 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1 text-center dark:bg-gray-900"
               >
-                <div className="w-[160px] h-[200px] mx-auto rounded-lg border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="w-[160px] h-[200px] mx-auto rounded-lg border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden dark:bg-gray-800">
                   <img
                     src={photo}
                     alt={person.full_name}
