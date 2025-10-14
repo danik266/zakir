@@ -124,7 +124,7 @@ const isAdmin = ["shampatov00@gmail.com", "eldosnuktenov08@gmail.com", "abilmans
                   </div>
 
                   <div className="text-center mt-3">
-                    <h3 className="text-lg font-semibold text-gray-800">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                       {person.full_name}
                     </h3>
                     <p className="text-sm text-gray-600">
