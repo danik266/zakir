@@ -84,6 +84,7 @@ const List = () => {
   };
 
 const isAdmin = ["shampatov00@gmail.com", "eldosnuktenov08@gmail.com", "abilmansursatalganov78@gmail.com"].includes(user?.email);
+  const isAdmin = user?.email === "shampatov00@gmail.com" && "danik269@vk.com" && "eldosnuktenov08@gmail.com" && "abilmansursatalganov78@gmail.com";
 
   if (loading) return <div className="text-center mt-10">Загрузка...</div>;
 
