@@ -69,13 +69,12 @@ const Dua = () => {
 const [active, setActive] = useState(0);
   return (
     <>
-        <div className="flex flex-col gap-5 items-center mt-15">
+        <div className="flex flex-col gap-5 items-center mt-15 ">
             <span className='text-4xl text-[#48887B]'>Құран бағыштап үйреніңіз</span>
             <span className='text-2xl text-gray-400'>Передайте вознаграждение (саваб) умершему</span>
         </div>
-        <div className="max-w-7xl mx-auto my-10 p-6 bg-white rounded-xl shadow-md">
-      {/* Tabs */}
-      <div className="flex justify-center mb-6 space-x-3 flex-wrap">
+        <div className="max-w-7xl mx-auto my-10 p-6 bg-white rounded-xl shadow-md dark:bg-gray-800">
+      <div className="flex justify-center mb-6 space-x-3 flex-wrap ">
         {tabs.map((tab, i) => (
           <button
             key={i}
@@ -83,16 +82,14 @@ const [active, setActive] = useState(0);
             className={`px-5 py-2 rounded-t-lg font-medium text-lg ${
               active === i
                 ? "bg-[#48887B] text-white shadow-lg"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300 "
             }`}
           >
             {tab.title}
           </button>
         ))}
       </div>
-
-      {/* Content */}
-      <div className="border rounded-b-lg p-6 bg-gray-50 whitespace-pre-line text-lg leading-relaxed">
+      <div className="border rounded-b-lg p-6 bg-gray-50 whitespace-pre-line text-lg leading-relaxed dark:bg-gray-800">
         {tabs[active].content}
       </div>
     </div>
