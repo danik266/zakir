@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface Memorial {
   id: string;
@@ -27,7 +28,9 @@ export default function Search() {
   const [results, setResults] = useState<Memorial[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  
   async function handleSearch() {
     setErrorMessage("");
     setLoading(true);
@@ -40,8 +43,6 @@ export default function Search() {
     }
 
     let query = supabase.from("memorials").select("*");
-
-    // По текстовым полям
     if (surname) query = query.ilike("full_name", `%${surname}%`);
     if (name) query = query.ilike("full_name", `%${name}%`);
     if (location)
@@ -115,16 +116,23 @@ if (deathYear) {
     setLoading(false);
   }
 
-  const [isPlaying, setIsPlaying] = useState(true);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (isPlaying) audio.pause();
-    else audio.play();
-    setIsPlaying(!isPlaying);
-  };
+  useEffect(() => {
+      const checkSession = async () => {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+  
+        if (!session) {
+          router.push("https://zakir-ten.vercel.app");
+        } else {
+          setUserEmail(session.user.email ?? null);
+        }
+        setLoading(false);
+      };
+  
+      checkSession();
+    }, [router]);
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-md mt-8 dark:bg-gray-800 " >

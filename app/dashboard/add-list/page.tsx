@@ -5,6 +5,7 @@ import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
 import svg from "../../../public/Group 7 (1).svg";
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function AddList() {
   const [person, setFormData] = useState({
@@ -26,6 +27,25 @@ export default function AddList() {
   const [message, setMessage] = useState("");
   const [isClicked, setIsClicked] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("https://zakir-ten.vercel.app");
+      } else {
+        setUserEmail(session.user.email ?? null);
+      }
+      setLoading(false);
+    };
+
+    checkSession();
+  }, [router]);
 
   useEffect(() => {
     const fetchUser = async () => {

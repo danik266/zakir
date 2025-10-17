@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../../lib/supabaseClient";
+import { useRouter } from "next/navigation";
+
 
 interface Memorial {
   id: string;
@@ -18,6 +20,25 @@ const List = () => {
   const [memorials, setMemorials] = useState<Memorial[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("https://zakir-ten.vercel.app");
+      } else {
+        setUserEmail(session.user.email ?? null);
+      }
+      setLoading(false);
+    };
+
+    checkSession();
+  }, [router]);
 
   useEffect(() => {
     const fetchData = async () => {
