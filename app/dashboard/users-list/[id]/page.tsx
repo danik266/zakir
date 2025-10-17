@@ -267,7 +267,6 @@ if (memorialData) {
           )}
          <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-700 dark:bg-gray-800 dark:text-white">
           <p><span className="font-semibold text-[#48887B]">Создал:</span> {user?.created_by_name || "Неизвестно"}</p>
-          <p><span className="font-semibold text-[#48887B]">Email:</span> {user?.created_by_email || "Не указан"}</p>
           <p><span className="font-semibold text-[#48887B]">Дата создания:</span> {user?.created_at ? new Date(user.created_at).toLocaleString("ru-RU", { dateStyle: "long", timeStyle: "short" }) : "—"}</p>
         </div>
         </div>
