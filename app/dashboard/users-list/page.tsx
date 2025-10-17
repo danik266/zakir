@@ -30,7 +30,7 @@ const List = () => {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.push("https://zakir-ten.vercel.app");
+        router.push("https://zakir-ten.vercel.app/sign-up");
       } else {
         setUserEmail(session.user.email ?? null);
       }
