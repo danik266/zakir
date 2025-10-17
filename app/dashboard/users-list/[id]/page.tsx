@@ -11,7 +11,6 @@ import ReviewsSection from "./ReviewsSection";
 
 export default function UserPage() {
   const { id } = useParams();
-  const router = useRouter(); 
   const [user, setUser] = useState<any>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,27 +20,12 @@ export default function UserPage() {
   const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-
-
   const surahList = [
     { name: "Аль-Фатиха", file: "al-fatiha.mp3" },
     { name: "Аят Аль-курси", file: "ayatalkursi.mp3" },
     { name: "Ыкылас", file: "ikhlas.mp3" },
     { name: "Дуа", file: "dua.mp3" },
   ];
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/sign-up");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   useEffect(() => {
     const loadUser = async () => {

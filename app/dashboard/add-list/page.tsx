@@ -53,7 +53,6 @@ useEffect(() => {
       if (!error && data?.user) {
   setUserEmail(data.user.email ?? null);
 }
-
     };
     fetchUser();
   }, []);
