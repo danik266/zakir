@@ -18,7 +18,7 @@ const Navbar = () => {
         </div>
         <div className="hidden md:flex gap-4 items-center">
           <Link
-            href="/donate"
+            href="/dashboard/donate"
             className="border border-[#48887B] bg-[#48887B] text-white px-6 py-2 rounded transition-all hover:bg-[#5cae9e]"
           >
             Пожертвовать
@@ -41,7 +41,7 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden mt-2 flex flex-col gap-2 px- pt-5">
           <Link
-            href="/donate"
+            href="/dashboard/donate"
             className="border border-[#48887B] bg-[#48887B] text-white px-4 py-2 rounded transition-all hover:bg-[#5cae9e]"
             onClick={() => setIsOpen(false)}
           >
