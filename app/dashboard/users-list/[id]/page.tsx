@@ -128,12 +128,12 @@ if (memorialData) {
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
-            checked={isPlaying}
-            onChange={togglePlay}
+            checked={togglePlay}
+            onChange={isPlaying}
             className="w-5 h-5 accent-[#48887b] "
           />
           <span className="text-gray-700 font-medium dark:text-white">
-            {isPlaying ? "Остановить чтение Корана" : "Включить чтение Корана"}
+            {togglePlay ? "Остановить чтение Корана" : "Включить чтение Корана"}
           </span>
         </label>
         <div className="flex items-center gap-3">
