@@ -15,9 +15,10 @@ export default function UserPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [videoIndex, setVideoIndex] = useState(0);
   const [selectedSurah, setSelectedSurah] = useState<string>("al-fatiha.mp3");
   const [volume, setVolume] = useState<number>(0.5);
-  const [isPlaying, setIsPlaying] = useState(false); 
+  const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const surahList = [
@@ -43,7 +44,9 @@ export default function UserPage() {
 
       if (memorialData) {
         let photos: string[] = [];
+        let videos: string[] = [];
 
+        // --- Фото ---
         if (Array.isArray(memorialData.photo_url)) {
           photos = memorialData.photo_url;
         } else if (typeof memorialData.photo_url === "string") {
@@ -55,6 +58,18 @@ export default function UserPage() {
           }
         }
 
+        // --- Видео ---
+        if (Array.isArray(memorialData.video_url)) {
+          videos = memorialData.video_url;
+        } else if (typeof memorialData.video_url === "string") {
+          try {
+            const parsed = JSON.parse(memorialData.video_url);
+            videos = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            videos = [memorialData.video_url];
+          }
+        }
+
         photos = photos.map((url) =>
           url && !url.startsWith("http")
             ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${url}`
@@ -63,9 +78,17 @@ export default function UserPage() {
             : url
         );
 
+        videos = videos.map((url) =>
+          url && !url.startsWith("http")
+            ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/videos/${url}`
+            : url.startsWith("https:/") && !url.startsWith("https://")
+            ? url.replace("https:/", "https://")
+            : url
+        );
+
         if (!photos.length) photos = ["/nophoto.jpg"];
 
-        setUser({ ...memorialData, photos });
+        setUser({ ...memorialData, photos, videos });
 
         const pageUrl = `${window.location.origin}/dashboard/users-list/${memorialData.id}`;
         const qr = await QRCode.toDataURL(pageUrl);
@@ -82,11 +105,8 @@ export default function UserPage() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
+    if (isPlaying) audio.pause();
+    else audio.play();
     setIsPlaying(!isPlaying);
   };
 
@@ -99,7 +119,7 @@ export default function UserPage() {
       audioRef.current.load();
       if (isPlaying) audioRef.current.play();
     }
-  }, [selectedSurah, isPlaying]);
+  }, [selectedSurah]);
 
   const prevPhoto = () => {
     if (!user?.photos?.length) return;
@@ -109,6 +129,16 @@ export default function UserPage() {
   const nextPhoto = () => {
     if (!user?.photos?.length) return;
     setCurrentIndex((prev) => (prev === user.photos.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevVideo = () => {
+    if (!user?.videos?.length) return;
+    setVideoIndex((prev) => (prev === 0 ? user.videos.length - 1 : prev - 1));
+  };
+
+  const nextVideo = () => {
+    if (!user?.videos?.length) return;
+    setVideoIndex((prev) => (prev === user.videos.length - 1 ? 0 : prev + 1));
   };
 
   if (loading)
@@ -261,6 +291,37 @@ export default function UserPage() {
           </div>
         </div>
       </div>
+      {user?.videos && user.videos.length > 0 && (
+        <div className="max-w-4xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 relative">
+          <h2 className="text-2xl font-semibold text-center mb-5 dark:text-white">Видео</h2>
+
+          <div className="relative flex justify-center items-center">
+            <video
+              key={videoIndex}
+              src={user.videos[videoIndex]}
+              controls
+              className="w-full rounded-2xl shadow-md max-h-[500px]"
+              preload="metadata"
+            />
+            {user.videos.length > 1 && (
+              <>
+                <button
+                  onClick={prevVideo}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={nextVideo}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 dark:bg-gray-800 ">
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Описание</h2>
