@@ -24,10 +24,10 @@ export default function UserPage() {
   const [mediaView, setMediaView] = useState<"photo" | "video">("photo");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [modal, setModal] = useState<{ show: boolean; message: string; type: "success" | "error" | "" }>({
-  show: false,
-  message: "",
-  type: "",
-});
+    show: false,
+    message: "",
+    type: "",
+  });
 
   const surahList = [
     { name: "Аль-Фатиха", file: "al-fatiha.mp3" },
@@ -35,14 +35,15 @@ export default function UserPage() {
     { name: "Ыкылас", file: "ikhlas.mp3" },
     { name: "Дуа", file: "dua.mp3" },
   ];
+
   useEffect(() => {
-  if (modal.show) {
-    const timer = setTimeout(() => {
-      setModal({ show: false, message: "", type: "" });
-    }, 2000);
-    return () => clearTimeout(timer);
-  }
-}, [modal]);
+    if (modal.show) {
+      const timer = setTimeout(() => {
+        setModal({ show: false, message: "", type: "" });
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [modal]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -68,39 +69,31 @@ export default function UserPage() {
         let photos: string[] = [];
         let videos: string[] = [];
 
-        if (Array.isArray(memorialData.photo_url)) photos = memorialData.photo_url;
-        else if (typeof memorialData.photo_url === "string") {
-          try {
-            const parsed = JSON.parse(memorialData.photo_url);
-            photos = Array.isArray(parsed) ? parsed : [parsed];
-          } catch {
-            photos = [memorialData.photo_url];
-          }
+        try {
+          photos = Array.isArray(memorialData.photo_url)
+            ? memorialData.photo_url
+            : JSON.parse(memorialData.photo_url || "[]");
+        } catch {
+          photos = [memorialData.photo_url].filter(Boolean);
         }
 
-        if (Array.isArray(memorialData.video_url)) videos = memorialData.video_url;
-        else if (typeof memorialData.video_url === "string") {
-          try {
-            const parsed = JSON.parse(memorialData.video_url);
-            videos = Array.isArray(parsed) ? parsed : [parsed];
-          } catch {
-            videos = [memorialData.video_url];
-          }
+        try {
+          videos = Array.isArray(memorialData.video_url)
+            ? memorialData.video_url
+            : JSON.parse(memorialData.video_url || "[]");
+        } catch {
+          videos = [memorialData.video_url].filter(Boolean);
         }
 
         photos = photos.map((url) =>
           url && !url.startsWith("http")
             ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${url}`
-            : url.startsWith("https:/") && !url.startsWith("https://")
-            ? url.replace("https:/", "https://")
             : url
         );
 
         videos = videos.map((url) =>
           url && !url.startsWith("http")
             ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/videos/${url}`
-            : url.startsWith("https:/") && !url.startsWith("https://")
-            ? url.replace("https:/", "https://")
             : url
         );
 
@@ -160,30 +153,29 @@ export default function UserPage() {
   };
 
   const handleDelete = async () => {
-  if (!user?.id) return;
+    if (!user?.id) return;
 
-  const { error } = await supabase.from("memorials").delete().eq("id", user.id);
+    const { error } = await supabase.from("memorials").delete().eq("id", user.id);
 
-  if (error) {
-    setModal({
-      show: true,
-      message: "Ошибка при удалении страницы. Попробуйте снова.",
-      type: "error",
-    });
-    console.error(error);
-  } else {
-    setModal({
-      show: true,
-      message: "Страница успешно удалена!",
-      type: "success",
-    });
+    if (error) {
+      setModal({
+        show: true,
+        message: "Ошибка при удалении страницы. Попробуйте снова.",
+        type: "error",
+      });
+      console.error(error);
+    } else {
+      setModal({
+        show: true,
+        message: "Страница успешно удалена!",
+        type: "success",
+      });
 
-    setTimeout(() => {
-      router.push("/dashboard/users-list");
-    }, 2000);
-  }
-};
-
+      setTimeout(() => {
+        router.push("/dashboard/users-list");
+      }, 2000);
+    }
+  };
 
   if (loading)
     return (
@@ -205,7 +197,7 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen py-5 px-4">
-
+      {/* ======= КОНТРОЛЫ АУДИО ======= */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl mb-10 max-w-5xl mx-auto dark:bg-gray-800">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -251,7 +243,9 @@ export default function UserPage() {
         </audio>
       </div>
 
+      {/* ======= ОСНОВНОЙ КОНТЕНТ ======= */}
       <div className="max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden grid md:grid-cols-2 gap-8 p-8 dark:bg-gray-800">
+        {/* Фото */}
         <div className="relative flex justify-center items-center flex-col">
           <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl bg-gray-100 flex justify-center items-center dark:bg-gray-900">
             <AnimatePresence mode="wait">
@@ -270,6 +264,7 @@ export default function UserPage() {
           </div>
         </div>
 
+        {/* Инфо */}
         <div className="flex flex-col justify-start">
           <div className="flex justify-between items-start flex-wrap gap-2 mb-5">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white break-words max-w-[80%]">
@@ -295,36 +290,191 @@ export default function UserPage() {
             )}
           </div>
 
-          <p className="mb-2"><span className="font-semibold dark:text-white">Дата рождения:</span> {user.birth_date || "—"}</p>
-          <p className="mb-2"><span className="font-semibold dark:text-white">Дата смерти:</span> {user.death_date || "—"}</p>
-          <p className="mb-5"><span className="font-semibold dark:text-white">Религия:</span> {user.religion || "—"}</p>
+          <p className="mb-2">
+            <span className="font-semibold dark:text-white">Дата рождения:</span>{" "}
+            {user.birth_date || "—"}
+          </p>
+          <p className="mb-2">
+            <span className="font-semibold dark:text-white">Дата смерти:</span>{" "}
+            {user.death_date || "—"}
+          </p>
+          <p className="mb-5">
+            <span className="font-semibold dark:text-white">Религия:</span>{" "}
+            {user.religion || "—"}
+          </p>
 
-          <h2 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">Место захоронения:</h2>
+          <h2 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">
+            Место захоронения:
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-gray-800 mb-8 dark:text-white">
-            <p><span className="font-semibold">Страна:</span> {user.country || "—"}</p>
-            <p><span className="font-semibold">Город:</span> {user.city || "—"}</p>
-            <p><span className="font-semibold">Адрес:</span> {user.address || "—"}</p>
+            <p>
+              <span className="font-semibold">Страна:</span> {user.country || "—"}
+            </p>
+            <p>
+              <span className="font-semibold">Город:</span> {user.city || "—"}
+            </p>
+            <p>
+              <span className="font-semibold">Адрес:</span> {user.address || "—"}
+            </p>
             <p>
               <span className="font-semibold">Ссылка:</span>{" "}
               {user.place_url ? (
-                <a href={user.place_url} target="_blank" rel="noopener noreferrer" className="text-[#48887B] hover:underline break-all">
+                <a
+                  href={user.place_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#48887B] hover:underline break-all"
+                >
                   Нажмите здесь
                 </a>
-              ) : "—"}
+              ) : (
+                "—"
+              )}
             </p>
           </div>
 
           {qrCodeUrl && (
             <div className="flex flex-col items-center md:items-start gap-2">
-              <img src={qrCodeUrl} alt="QR Code" className="w-36 h-36 border border-gray-300 rounded-lg bg-white p-2" />
-              <p className="text-sm text-gray-600 dark:text-white">Сканируйте, чтобы открыть страницу</p>
+              <img
+                src={qrCodeUrl}
+                alt="QR Code"
+                className="w-36 h-36 border border-gray-300 rounded-lg bg-white p-2"
+              />
+              <p className="text-sm text-gray-600 dark:text-white">
+                Сканируйте, чтобы открыть страницу
+              </p>
             </div>
           )}
 
           <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-700 dark:bg-gray-800 dark:text-white">
-            <p><span className="font-semibold text-[#48887B]">Создал:</span> {user?.created_by_name || "Неизвестно"}</p>
-            <p><span className="font-semibold text-[#48887B]">Дата создания:</span> {user?.created_at ? new Date(user.created_at).toLocaleString("ru-RU", { dateStyle: "long", timeStyle: "short" }) : "—"}</p>
+            <p>
+              <span className="font-semibold text-[#48887B]">Создал:</span>{" "}
+              {user?.created_by_name || "Неизвестно"}
+            </p>
+            <p>
+              <span className="font-semibold text-[#48887B]">Дата создания:</span>{" "}
+              {user?.created_at
+                ? new Date(user.created_at).toLocaleString("ru-RU", {
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  })
+                : "—"}
+            </p>
           </div>
+        </div>
+      </div>
+
+      {/* ======= Фото / Видео ======= */}
+      {(user?.photos?.length > 0 || user?.videos?.length > 0) && (
+        <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+          <div className="flex justify-center gap-4 mb-6">
+            <button
+              onClick={() => setMediaView("photo")}
+              className={`px-6 py-2 rounded-lg text-lg font-medium transition ${
+                mediaView === "photo"
+                  ? "bg-[#48887B] text-white shadow"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-white"
+              }`}
+            >
+              Фото
+            </button>
+            <button
+              onClick={() => setMediaView("video")}
+              className={`px-6 py-2 rounded-lg text-lg font-medium transition ${
+                mediaView === "video"
+                  ? "bg-[#48887B] text-white shadow"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-white"
+              }`}
+            >
+              Видео
+            </button>
+          </div>
+
+          {mediaView === "photo" && user?.photos?.length > 0 && (
+            <div className="relative flex justify-center items-center">
+              <motion.img
+                key={currentIndex}
+                src={user.photos[currentIndex]}
+                alt={`photo-${currentIndex}`}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.4 }}
+                className="rounded-2xl shadow-lg max-h-[500px] object-contain"
+                onError={(e) => ((e.target as HTMLImageElement).src = "/nophoto.jpg")}
+              />
+              {user.photos.length > 1 && (
+                <>
+                  <button
+                    onClick={prevPhoto}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={nextPhoto}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {mediaView === "video" && user?.videos?.length > 0 && (
+            <div className="relative flex justify-center items-center">
+              <video
+                key={videoIndex}
+                src={user.videos[videoIndex]}
+                controls
+                className="w-full rounded-2xl shadow-md max-h-[500px]"
+                preload="metadata"
+              />
+              {user.videos.length > 1 && (
+                <>
+                  <button
+                    onClick={prevVideo}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={nextVideo}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {mediaView === "video" && (!user.videos || user.videos.length === 0) && (
+            <p className="text-center text-gray-500 text-lg">Видео отсутствуют</p>
+          )}
+          {mediaView === "photo" && (!user.photos || user.photos.length === 0) && (
+            <p className="text-center text-gray-500 text-lg">Фото отсутствуют</p>
+          )}
+        </div>
+      )}
+
+      {/* ======= Описание и слова памяти ======= */}
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 dark:bg-gray-800">
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
+            Описание
+          </h2>
+          <div className="text-lg leading-relaxed text-gray-700 whitespace-pre-line break-words dark:text-white">
+            {user.description || "Нет описания"}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
+            Слова памяти
+          </h2>
+          <ReviewsSection memorialId={id as string} />
         </div>
       </div>
 
@@ -333,33 +483,34 @@ export default function UserPage() {
           ← Вернуться к списку
         </Link>
       </div>
-      <AnimatePresence>
-  {modal.show && (
-    <motion.div
-      key="modal"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-[9999] flex justify-center items-center backdrop-blur-sm"
-    >
-      <div
-        className={`bg-white dark:bg-gray-800 rounded-lg px-6 py-4 text-center border ${
-          modal.type === "success" ? "text-[#48887B]" : "text-red-600"
-        }`}
-      >
-        <p
-          className={`text-base font-medium ${
-            modal.type === "success" ? "text-[#48887B]" : "text-red-600"
-          }`}
-        >
-          {modal.message}
-        </p>
-      </div>
-    </motion.div>
-  )}
-</AnimatePresence>
 
-    </div> 
+      {/* ======= МОДАЛ ======= */}
+      <AnimatePresence>
+        {modal.show && (
+          <motion.div
+            key="modal"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[9999] flex justify-center items-center backdrop-blur-sm"
+          >
+            <div
+              className={`bg-white dark:bg-gray-800 rounded-lg px-6 py-4 text-center border ${
+                modal.type === "success" ? "text-[#48887B]" : "text-red-600"
+              }`}
+            >
+              <p
+                className={`text-base font-medium ${
+                  modal.type === "success" ? "text-[#48887B]" : "text-red-600"
+                }`}
+              >
+                {modal.message}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
