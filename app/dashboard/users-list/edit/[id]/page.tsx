@@ -46,7 +46,6 @@ export default function EditMemorial() {
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
 
-  // Получаем email текущего пользователя
   useEffect(() => {
     const getUserSession = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -57,7 +56,6 @@ export default function EditMemorial() {
     getUserSession();
   }, []);
 
-  // Загружаем мемориал
   useEffect(() => {
     if (!id) return;
     const loadMemorial = async () => {
@@ -106,22 +104,33 @@ export default function EditMemorial() {
     loadMemorial();
   }, [id]);
 
+  // ✅ Проверка прав доступа
   if (loading) return <p className="text-center mt-10">Загрузка...</p>;
   if (!user) return <p className="text-center mt-10">Мемориал не найден.</p>;
-  if (currentUserEmail && currentUserEmail !== user.created_by_email)
+
+  const allowedEmails = [
+    "shampatov00@gmail.com",
+    "eldosnuktenov08@gmail.com",
+    "abilmansursatalganov78@gmail.com",
+  ];
+
+  const canEdit =
+    currentUserEmail &&
+    (currentUserEmail === user.created_by_email ||
+      allowedEmails.includes(currentUserEmail));
+
+  if (!canEdit)
     return (
       <p className="text-center mt-10 text-red-500">
         У вас нет прав на редактирование этого мемориала.
       </p>
     );
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Загрузка файлов в Supabase
   async function uploadFilesToBucket(bucket: string, files: FileList) {
     const uploadedUrls: string[] = [];
 
