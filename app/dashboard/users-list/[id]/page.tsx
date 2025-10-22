@@ -494,7 +494,7 @@ export default function UserPage() {
             className="fixed inset-0 z-[9999] flex justify-center items-center backdrop-blur-sm"
           >
             <div
-              className={`bg-white dark:bg-gray-800 rounded-lg px-6 py-4 text-center border ${
+              className={`bg-white dark:bg-gray-800 rounded-lg px-6 py-4 text-center ${
                 modal.type === "success" ? "text-[#48887B]" : "text-red-600"
               }`}
             >

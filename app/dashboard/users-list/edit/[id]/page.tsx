@@ -623,7 +623,7 @@ export default function EditMemorial() {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="rounded-2xl shadow-2xl p-6 w-80 text-center bg-white"
+              className="rounded-2xl shadow-2xl p-6 w-80 text-center bg-white dark:bg-gray-800"
             >
               <p
                 className={`text-lg font-medium  ${
