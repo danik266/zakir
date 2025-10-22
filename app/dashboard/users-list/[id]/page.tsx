@@ -20,7 +20,7 @@ export default function UserPage() {
   const [volume, setVolume] = useState<number>(0.5);
   const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
-
+  const [mediaView, setMediaView] = useState<"photo" | "video">("photo");
   const surahList = [
     { name: "Аль-Фатиха", file: "al-fatiha.mp3" },
     { name: "Аят Аль-курси", file: "ayatalkursi.mp3" },
@@ -45,8 +45,6 @@ export default function UserPage() {
       if (memorialData) {
         let photos: string[] = [];
         let videos: string[] = [];
-
-        // --- Фото ---
         if (Array.isArray(memorialData.photo_url)) {
           photos = memorialData.photo_url;
         } else if (typeof memorialData.photo_url === "string") {
@@ -57,8 +55,6 @@ export default function UserPage() {
             photos = [memorialData.photo_url];
           }
         }
-
-        // --- Видео ---
         if (Array.isArray(memorialData.video_url)) {
           videos = memorialData.video_url;
         } else if (typeof memorialData.video_url === "string") {
@@ -267,8 +263,7 @@ export default function UserPage() {
                   href={user.place_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#48887B] hover:underline break-all "
-                >
+                  className="text-[#48887B] hover:underline break-all ">
                   Нажмите здесь
                 </a>
               ) : "—"}
@@ -291,37 +286,94 @@ export default function UserPage() {
           </div>
         </div>
       </div>
-      {user?.videos && user.videos.length > 0 && (
-        <div className="max-w-4xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 relative">
-          <h2 className="text-2xl font-semibold text-center mb-5 dark:text-white">Видео</h2>
+{(user?.photos?.length > 0 || user?.videos?.length > 0) && (
+  <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+    <div className="flex justify-center gap-4 mb-6">
+      <button
+        onClick={() => setMediaView("photo")}
+        className={`px-6 py-2 rounded-lg text-lg font-medium transition ${
+          mediaView === "photo"
+            ? "bg-[#48887B] text-white shadow"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-white"
+        }`}
+      >
+        Фото
+      </button>
+      <button
+        onClick={() => setMediaView("video")}
+        className={`px-6 py-2 rounded-lg text-lg font-medium transition ${
+          mediaView === "video"
+            ? "bg-[#48887B] text-white shadow"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-900 dark:text-white"
+        }`}
+      >
+        Видео
+      </button>
+    </div>
+    {mediaView === "photo" && user?.photos?.length > 0 && (
+      <div className="relative flex justify-center items-center">
+        <motion.img
+          key={currentIndex}
+          src={user.photos[currentIndex]}
+          alt={`photo-${currentIndex}`}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.02 }}
+          transition={{ duration: 0.4 }}
+          className="rounded-2xl shadow-lg max-h-[500px] object-contain"
+          onError={(e) => ((e.target as HTMLImageElement).src = "/nophoto.jpg")}/>
 
-          <div className="relative flex justify-center items-center">
-            <video
-              key={videoIndex}
-              src={user.videos[videoIndex]}
-              controls
-              className="w-full rounded-2xl shadow-md max-h-[500px]"
-              preload="metadata"
-            />
-            {user.videos.length > 1 && (
-              <>
-                <button
-                  onClick={prevVideo}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  onClick={nextVideo}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+        {user.photos.length > 1 && (
+          <>
+            <button
+              onClick={prevPhoto}
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition">
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={nextPhoto}
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition">
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </>
+        )}
+      </div>
+    )}
+
+    {mediaView === "video" && user?.videos?.length > 0 && (
+      <div className="relative flex justify-center items-center">
+        <video
+          key={videoIndex}
+          src={user.videos[videoIndex]}
+          controls
+          className="w-full rounded-2xl shadow-md max-h-[500px]"
+          preload="metadata"
+        />
+        {user.videos.length > 1 && (
+          <>
+            <button
+              onClick={prevVideo}
+              className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition">
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={nextVideo}
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition">
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </>
+        )}
+      </div>
+    )}
+    {mediaView === "video" && (!user.videos || user.videos.length === 0) && (
+      <p className="text-center text-gray-500 text-lg">Видео отсутствуют</p>
+    )}
+    {mediaView === "photo" && (!user.photos || user.photos.length === 0) && (
+      <p className="text-center text-gray-500 text-lg">Фото отсутствуют</p>
+    )}
+  </div>
+)}
+
       <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 dark:bg-gray-800 ">
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Описание</h2>
@@ -335,7 +387,6 @@ export default function UserPage() {
           <ReviewsSection memorialId={id as string} />
         </div>
       </div>
-
       <div className="text-center mt-10 ">
         <Link href="/dashboard/users-list" className="text-[#48887B] hover:underline text-lg">
           ← Вернуться к списку
