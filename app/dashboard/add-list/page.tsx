@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { supabase } from "../../../lib/supabaseClient";
-import svg from "../../../public/Group 7 (1).svg";
+import photocam from "../../../public/Group 7 (1).svg";
+import videocam from "../../../public/videocam.svg";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +35,24 @@ export default function AddList() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("https://zakir-ten.vercel.app/sign-up");
+      } else {
+        setUserEmail(session.user.email ?? null);
+      }
+      setLoading(false);
+    };
+
+    checkSession();
+  }, [router]);
+
+  
   useEffect(() => {
     const fetchUser = async () => {
       const { data, error } = await supabase.auth.getUser();
@@ -68,7 +87,6 @@ export default function AddList() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // === Фото ===
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
@@ -90,7 +108,6 @@ export default function AddList() {
     });
   };
 
-  // === Видео ===
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
@@ -132,7 +149,6 @@ export default function AddList() {
       let photoUrls: string[] = [];
       const videoUrls: string[] = [];
 
-      // === Фото ===
       if (photos.length > 0) {
         for (const file of photos) {
           const cleanName = file.name
@@ -281,7 +297,7 @@ export default function AddList() {
                   width={150}
                   height={150}
                   alt="SVG"
-                  src={svg}
+                  src={photocam}
                   className="opacity-70"
                 />
               )}
@@ -296,8 +312,6 @@ export default function AddList() {
             </div>
             <p>Нажмите, чтобы добавить фото</p>
           </div>
-
-          {/* Видео */}
           <div className="flex flex-col items-center gap-5">
             <div
               onClick={() => videoInputRef.current?.click()}
@@ -331,7 +345,7 @@ export default function AddList() {
                   width={150}
                   height={150}
                   alt="SVG"
-                  src={svg}
+                  src={videocam}
                   className="opacity-70"
                 />
               )}
@@ -347,8 +361,6 @@ export default function AddList() {
             <p>Нажмите, чтобы добавить видео</p>
           </div>
         </div>
-
-        {/* Остальная форма */}
         <input
           type="text"
           name="full_name"
