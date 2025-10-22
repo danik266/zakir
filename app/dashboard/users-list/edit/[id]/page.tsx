@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../../lib/supabaseClient";
@@ -19,6 +20,15 @@ export default function EditMemorial() {
   const [isClicked, setIsClicked] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [modal, setModal] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error" | "";
+  }>({
+    show: false,
+    message: "",
+    type: "",
+  });
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -35,17 +45,19 @@ export default function EditMemorial() {
 
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+
+  // Получаем email текущего пользователя
   useEffect(() => {
     const getUserSession = async () => {
       const { data, error } = await supabase.auth.getSession();
       if (error) console.error("session error:", error);
       const email = data?.session?.user?.email ?? null;
       setCurrentUserEmail(email);
-      console.log("current user email:", email);
     };
     getUserSession();
   }, []);
 
+  // Загружаем мемориал
   useEffect(() => {
     if (!id) return;
     const loadMemorial = async () => {
@@ -63,7 +75,6 @@ export default function EditMemorial() {
       }
 
       setUser(data);
-
       setFormData({
         full_name: data.full_name ?? "",
         iin: data.iin ?? "",
@@ -89,7 +100,6 @@ export default function EditMemorial() {
 
       setPhotoPreviews(parseFieldToArray(data.photo_url));
       setVideoPreviews(parseFieldToArray(data.video_url));
-
       setLoading(false);
     };
 
@@ -111,6 +121,7 @@ export default function EditMemorial() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Загрузка файлов в Supabase
   async function uploadFilesToBucket(bucket: string, files: FileList) {
     const uploadedUrls: string[] = [];
 
@@ -140,13 +151,14 @@ export default function EditMemorial() {
     return uploadedUrls;
   }
 
+  // Фото
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     try {
       const uploaded = await uploadFilesToBucket("photos", files);
       if (uploaded.length === 0) {
-        alert("Не удалось загрузить фото. Проверь консоль.");
+        alert("Не удалось загрузить фото.");
         return;
       }
       const updated = [...photoPreviews, ...uploaded];
@@ -174,13 +186,14 @@ export default function EditMemorial() {
     if (error) console.error("remove photo update error:", error);
   };
 
+  // Видео
   const handleVideoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     try {
       const uploaded = await uploadFilesToBucket("videos", files);
       if (uploaded.length === 0) {
-        alert("Не удалось загрузить видео. Проверь консоль.");
+        alert("Не удалось загрузить видео.");
         return;
       }
       const updated = [...videoPreviews, ...uploaded];
@@ -197,7 +210,6 @@ export default function EditMemorial() {
     }
   };
 
-  // --- Удаление видео ---
   const handleRemoveVideo = async (index: number, e: React.MouseEvent) => {
     e.stopPropagation();
     const updated = videoPreviews.filter((_, i) => i !== index);
@@ -209,7 +221,7 @@ export default function EditMemorial() {
     if (error) console.error("remove video update error:", error);
   };
 
-  // --- Сохранение формы ---
+  // Сохранение
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsClicked(true);
@@ -221,18 +233,30 @@ export default function EditMemorial() {
     };
 
     const { error } = await supabase.from("memorials").update(payload).eq("id", id);
+
     if (error) {
       console.error("submit update error:", error);
-      alert("Ошибка при обновлении данных. См. консоль.");
+      setModal({
+        show: true,
+        message: "Ошибка при обновлении данных. Попробуйте снова.",
+        type: "error",
+      });
       setIsClicked(false);
       return;
     }
 
-    alert("Изменения успешно сохранены!");
-    router.push(`/dashboard/users-list/${id}`);
+    setModal({
+      show: true,
+      message: "Изменения успешно сохранены!",
+      type: "success",
+    });
+
+    setTimeout(() => {
+      setModal({ show: false, message: "", type: "" });
+      router.push(`/dashboard/users-list/${id}`);
+    }, 2000);
   };
 
-  // --- UI ---
   return (
     <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-2xl sm:text-4xl text-[#48887B] font-bold mb-10 text-center">
@@ -576,6 +600,33 @@ export default function EditMemorial() {
           Сохранить изменения
         </button>
       </form>
+      <AnimatePresence>
+        {modal.show && (
+          <motion.div
+            key="modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex justify-center items-center  backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className="rounded-2xl shadow-2xl p-6 w-80 text-center bg-white"
+            >
+              <p
+                className={`text-lg font-medium  ${
+                  modal.type === "success" ? "text-[#48887B]" : "text-red-600"
+                }`}
+              >
+                {modal.message}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
