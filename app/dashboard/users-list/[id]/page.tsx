@@ -21,6 +21,8 @@ export default function UserPage() {
   const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [mediaView, setMediaView] = useState<"photo" | "video">("photo");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   const surahList = [
     { name: "Аль-Фатиха", file: "al-fatiha.mp3" },
     { name: "Аят Аль-курси", file: "ayatalkursi.mp3" },
@@ -28,6 +30,14 @@ export default function UserPage() {
     { name: "Дуа", file: "dua.mp3" },
   ];
 
+  // Получаем текущего пользователя
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setCurrentUser(data.session.user);
+    });
+  }, []);
+
+  // Загрузка пользователя
   useEffect(() => {
     const loadUser = async () => {
       const { data: memorialData, error } = await supabase
@@ -45,9 +55,9 @@ export default function UserPage() {
       if (memorialData) {
         let photos: string[] = [];
         let videos: string[] = [];
-        if (Array.isArray(memorialData.photo_url)) {
-          photos = memorialData.photo_url;
-        } else if (typeof memorialData.photo_url === "string") {
+
+        if (Array.isArray(memorialData.photo_url)) photos = memorialData.photo_url;
+        else if (typeof memorialData.photo_url === "string") {
           try {
             const parsed = JSON.parse(memorialData.photo_url);
             photos = Array.isArray(parsed) ? parsed : [parsed];
@@ -55,9 +65,9 @@ export default function UserPage() {
             photos = [memorialData.photo_url];
           }
         }
-        if (Array.isArray(memorialData.video_url)) {
-          videos = memorialData.video_url;
-        } else if (typeof memorialData.video_url === "string") {
+
+        if (Array.isArray(memorialData.video_url)) videos = memorialData.video_url;
+        else if (typeof memorialData.video_url === "string") {
           try {
             const parsed = JSON.parse(memorialData.video_url);
             videos = Array.isArray(parsed) ? parsed : [parsed];
@@ -151,8 +161,13 @@ export default function UserPage() {
       </div>
     );
 
+  const canEdit =
+    currentUser &&
+    (currentUser.id === user.created_by || currentUser.email === user.created_by_email);
+
   return (
     <div className="min-h-screen py-5 px-4">
+      {/* Верхний блок с аудио */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl shadow mb-10 max-w-5xl mx-auto dark:bg-gray-800">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -198,7 +213,8 @@ export default function UserPage() {
         </audio>
       </div>
 
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 gap-8 p-8 dark:bg-gray-800 ">
+      {/* Основной блок */}
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden grid md:grid-cols-2 gap-8 p-8 dark:bg-gray-800">
         <div className="relative flex justify-center items-center flex-col">
           <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl shadow-lg bg-gray-100 flex justify-center items-center dark:bg-gray-900">
             <AnimatePresence mode="wait">
@@ -215,41 +231,27 @@ export default function UserPage() {
               />
             </AnimatePresence>
           </div>
-          {user.photos?.length > 1 && (
-            <>
-              <button
-                onClick={prevPhoto}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition "
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                onClick={nextPhoto}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-700 p-2 rounded-full shadow-md transition"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-          <Link
-            href="/dashboard/dua"
-            className="mt-4 text-xl text-[#48887B] border-b-2 border-transparent pb-1 hover:border-[#48887B] transition dark:text-white"
-          >
-            Құран бағыштау за <b>{user.full_name}</b>
-          </Link>
         </div>
 
         <div className="flex flex-col justify-start">
-          <h1 className="text-4xl font-bold text-gray-900 mb-5 dark:text-white">{user.full_name}</h1>
-          <p className="mb-2">
-            <span className="font-semibold dark:text-white">Дата рождения:</span> {user.birth_date || "—"}
-          </p>
-          <p className="mb-2">
-            <span className="font-semibold dark:text-white">Дата смерти:</span> {user.death_date || "—"}
-          </p>
-          <p className="mb-5">
-            <span className="font-semibold dark:text-white">Религия:</span> {user.religion || "—"}
-          </p>
+          <div className="flex justify-between items-start flex-wrap gap-2 mb-5">
+  <h1 className="text-4xl font-bold text-gray-900 dark:text-white break-words max-w-[80%]">
+    {user.full_name}
+  </h1>
+  {canEdit && (
+    <Link
+      href={`/dashboard/users-list/edit/${user.id}`}
+      className="mt-5 px-4 py-2 bg-[#48887B] text-white rounded-lg shadow hover:bg-[#3a6b63] transition whitespace-nowrap"
+    >
+      Редактировать
+    </Link>
+  )}
+</div>
+
+
+          <p className="mb-2"><span className="font-semibold dark:text-white">Дата рождения:</span> {user.birth_date || "—"}</p>
+          <p className="mb-2"><span className="font-semibold dark:text-white">Дата смерти:</span> {user.death_date || "—"}</p>
+          <p className="mb-5"><span className="font-semibold dark:text-white">Религия:</span> {user.religion || "—"}</p>
 
           <h2 className="text-2xl font-semibold mb-3 text-gray-900 dark:text-white">Место захоронения:</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-gray-800 mb-8 dark:text-white">
