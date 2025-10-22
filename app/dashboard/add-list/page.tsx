@@ -263,104 +263,6 @@ export default function AddList() {
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-10 w-full max-w-[1200px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="flex flex-col items-center gap-5">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-[#48887B] w-full aspect-square relative rounded-xl flex justify-center items-center overflow-hidden cursor-pointer"
-            >
-              {photoPreviews.length > 0 ? (
-                <div className="w-full h-full p-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {photoPreviews.map((src, index) => (
-                    <div
-                      key={index}
-                      className="relative rounded-xl overflow-hidden border border-[#48887B] flex items-center justify-center"
-                    >
-                      <img
-                        src={src}
-                        alt={`preview-${index}`}
-                        className="object-cover w-full h-[120px]"
-                      />
-                      <button
-                        type="button"
-                        onClick={(ev) => handleRemovePhoto(index, ev)}
-                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition"
-                        title="Удалить фото"
-                      >
-                        <X size={18} className="text-red-500" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Image
-                  width={150}
-                  height={150}
-                  alt="SVG"
-                  src={photocam}
-                  className="opacity-70"
-                />
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handlePhotoChange}
-                className="hidden"
-              />
-            </div>
-            <p>Нажмите, чтобы добавить фото</p>
-          </div>
-          <div className="flex flex-col items-center gap-5">
-            <div
-              onClick={() => videoInputRef.current?.click()}
-              className="border-2 border-[#48887B] w-full aspect-square relative rounded-xl flex justify-center items-center overflow-hidden cursor-pointer"
-            >
-              {videoPreviews.length > 0 ? (
-                <div className="w-full h-full p-3 grid grid-cols-1 gap-3">
-                  {videoPreviews.map((src, index) => (
-                    <div
-                      key={index}
-                      className="relative rounded-xl overflow-hidden border border-[#48887B]"
-                    >
-                      <video
-                        src={src}
-                        controls
-                        className="object-cover w-full h-[200px]"
-                      />
-                      <button
-                        type="button"
-                        onClick={(ev) => handleRemoveVideo(index, ev)}
-                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition"
-                        title="Удалить видео"
-                      >
-                        <X size={18} className="text-red-500" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Image
-                  width={150}
-                  height={150}
-                  alt="SVG"
-                  src={videocam}
-                  className="opacity-70"
-                />
-              )}
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/*"
-                multiple
-                onChange={handleVideoChange}
-                className="hidden"
-              />
-            </div>
-            <p>Нажмите, чтобы добавить видео</p>
-          </div>
-        </div>
         <input
           type="text"
           name="full_name"
@@ -624,6 +526,104 @@ export default function AddList() {
             required
           />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex flex-col items-center gap-5">
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-[#48887B] w-full aspect-square relative rounded-xl flex justify-center items-center overflow-hidden cursor-pointer"
+            >
+              {photoPreviews.length > 0 ? (
+                <div className="w-full h-full p-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {photoPreviews.map((src, index) => (
+                    <div
+                      key={index}
+                      className="relative rounded-xl overflow-hidden border border-[#48887B] flex items-center justify-center"
+                    >
+                      <img
+                        src={src}
+                        alt={`preview-${index}`}
+                        className="object-cover w-full h-[120px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={(ev) => handleRemovePhoto(index, ev)}
+                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition"
+                        title="Удалить фото"
+                      >
+                        <X size={18} className="text-red-500" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Image
+                  width={150}
+                  height={150}
+                  alt="SVG"
+                  src={photocam}
+                  className="opacity-70"
+                />
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+            </div>
+            <p>Нажмите, чтобы добавить фото</p>
+          </div>
+          <div className="flex flex-col items-center gap-5">
+            <div
+              onClick={() => videoInputRef.current?.click()}
+              className="border-2 border-[#48887B] w-full aspect-square relative rounded-xl flex justify-center items-center overflow-hidden cursor-pointer"
+            >
+              {videoPreviews.length > 0 ? (
+                <div className="w-full h-full p-3 grid grid-cols-1 gap-3">
+                  {videoPreviews.map((src, index) => (
+                    <div
+                      key={index}
+                      className="relative rounded-xl overflow-hidden border border-[#48887B]"
+                    >
+                      <video
+                        src={src}
+                        controls
+                        className="object-cover w-full h-[200px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={(ev) => handleRemoveVideo(index, ev)}
+                        className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100 transition"
+                        title="Удалить видео"
+                      >
+                        <X size={18} className="text-red-500" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Image
+                  width={150}
+                  height={150}
+                  alt="SVG"
+                  src={videocam}
+                  className="opacity-70"
+                />
+              )}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={handleVideoChange}
+                className="hidden"
+              />
+            </div>
+            <p>Нажмите, чтобы добавить видео</p>
+          </div>
+        </div>
         <div className="flex justify-center">
           <button
             type="submit"
@@ -634,7 +634,7 @@ export default function AddList() {
                 : "bg-[#48887B] hover:bg-[#3a6f63]"
             }`}
           >
-            {isClicked ? "Добавляется..." : "Добавить"}
+            {isClicked ? "Добавить" : "Добавить"}
           </button>
         </div>
       </form>
