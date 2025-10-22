@@ -373,6 +373,7 @@ export default function UserPage() {
     )}
   </div>
 )}
+
       <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 dark:bg-gray-800 ">
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Описание</h2>
