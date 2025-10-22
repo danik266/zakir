@@ -191,13 +191,17 @@ export default function UserPage() {
       </div>
     );
 
-  const canEdit =
-    currentUser &&
-    (currentUser.id === user.created_by || currentUser.email === user.created_by_email);
+ const canEdit =
+  currentUser &&
+  (
+    currentUser.id === user.created_by ||
+    currentUser.email === user.created_by_email ||
+    ["shampatov00@gmail.com", "eldosnuktenov08@gmail.com", "abilmansursatalganov78@gmail.com"]
+      .includes(currentUser.email)
+  );
 
   return (
     <div className="min-h-screen py-5 px-4">
-      {/* ======= КОНТРОЛЫ АУДИО ======= */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-xl mb-10 max-w-5xl mx-auto dark:bg-gray-800">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -243,9 +247,7 @@ export default function UserPage() {
         </audio>
       </div>
 
-      {/* ======= ОСНОВНОЙ КОНТЕНТ ======= */}
       <div className="max-w-6xl mx-auto bg-white rounded-2xl overflow-hidden grid md:grid-cols-2 gap-8 p-8 dark:bg-gray-800">
-        {/* Фото */}
         <div className="relative flex justify-center items-center flex-col">
           <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-2xl bg-gray-100 flex justify-center items-center dark:bg-gray-900">
             <AnimatePresence mode="wait">
@@ -264,7 +266,6 @@ export default function UserPage() {
           </div>
         </div>
 
-        {/* Инфо */}
         <div className="flex flex-col justify-start">
           <div className="flex justify-between items-start flex-wrap gap-2 mb-5">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white break-words max-w-[80%]">
@@ -364,7 +365,6 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* ======= Фото / Видео ======= */}
       {(user?.photos?.length > 0 || user?.videos?.length > 0) && (
         <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
           <div className="flex justify-center gap-4 mb-6">
@@ -459,7 +459,6 @@ export default function UserPage() {
         </div>
       )}
 
-      {/* ======= Описание и слова памяти ======= */}
       <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-md mt-10 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 dark:bg-gray-800">
         <div>
           <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
@@ -484,7 +483,6 @@ export default function UserPage() {
         </Link>
       </div>
 
-      {/* ======= МОДАЛ ======= */}
       <AnimatePresence>
         {modal.show && (
           <motion.div

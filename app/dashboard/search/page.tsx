@@ -115,8 +115,6 @@ if (deathYear) {
     setResults(normalized);
     setLoading(false);
   }
-
-
   useEffect(() => {
       const checkSession = async () => {
         const {

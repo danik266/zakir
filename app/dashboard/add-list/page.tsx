@@ -35,22 +35,22 @@ export default function AddList() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   const checkSession = async () => {
-  //     const {
-  //       data: { session },
-  //     } = await supabase.auth.getSession();
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  //     if (!session) {
-  //       router.push("https://zakir-ten.vercel.app/sign-up");
-  //     } else {
-  //       setUserEmail(session.user.email ?? null);
-  //     }
-  //     setLoading(false);
-  //   };
+      if (!session) {
+        router.push("https://zakir-ten.vercel.app/sign-up");
+      } else {
+        setUserEmail(session.user.email ?? null);
+      }
+      setLoading(false);
+    };
 
-  //   checkSession();
-  // }, [router]);
+    checkSession();
+  }, [router]);
 
   
   useEffect(() => {
