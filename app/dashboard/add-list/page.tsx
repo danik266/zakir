@@ -130,7 +130,7 @@ export default function AddList() {
 
     try {
       let photoUrls: string[] = [];
-      let videoUrls: string[] = [];
+      const videoUrls: string[] = [];
 
       // === Фото ===
       if (photos.length > 0) {
