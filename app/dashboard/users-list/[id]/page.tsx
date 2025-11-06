@@ -87,8 +87,14 @@ export default function UserPage() {
       if (data.session) setCurrentUser(data.session.user);
     });
   }, []);
+const didLoadRef = useRef(false);
 
 useEffect(() => {
+  if (didLoadRef.current) return; // Уже загрузили
+  if (currentUser === null) return; // Ждём currentUser
+
+  didLoadRef.current = true;
+
   const loadUser = async () => {
     const { data: memorialData, error } = await supabase
       .from("memorials")
@@ -103,16 +109,18 @@ useEffect(() => {
     }
 
     if (memorialData) {
-      // Обновляем просмотры
-      await supabase
-        .from("memorials")
-        .update({ views: (memorialData.views || 0) + 1 })
-        .eq("id", memorialData.id);
+      const newViewsCount = (memorialData.views || 0) + 1;
+      await supabase.from("memorials").update({ views: newViewsCount }).eq("id", memorialData.id);
 
-      // Обновим локальное состояние с новым количеством просмотров
+      await supabase.from("memorial_views").insert({
+        memorial_id: memorialData.id,
+        viewer_name: currentUser?.user_metadata?.display_name || "Гость",
+        viewed_at: new Date(),
+      });
+
       setUser({
         ...memorialData,
-        views: (memorialData.views || 0) + 1,
+        views: newViewsCount,
         photos: Array.isArray(memorialData.photo_url)
           ? memorialData.photo_url
           : JSON.parse(memorialData.photo_url || "[]"),
@@ -130,7 +138,8 @@ useEffect(() => {
   };
 
   loadUser();
-}, [id]);
+}, [id, currentUser]);
+
 
 
   const togglePlay = () => {
@@ -285,13 +294,13 @@ useEffect(() => {
               />
             </AnimatePresence>
           </div>
-          <Link
-                    href="/dashboard/dua"
-                    className="text-xl text-[#48887B] border-white border-b-2 hover:border-b-2 pb-1
-                    hover:border-[#48887B]"
-                    >
-                     Құран бағыштау за <b>{user.full_name}</b>
-                    </Link>
+            <Link
+    href="/dashboard/dua"
+    className="mt-6 text-xl text-[#48887B] border-white border-b-2 hover:border-b-2 pb-1
+               hover:border-[#48887B]"
+  >
+    Құран бағыштау за <b>{user.full_name}</b>
+  </Link>
         </div>
 
         <div className="flex flex-col justify-start">
@@ -299,24 +308,30 @@ useEffect(() => {
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white break-words max-w-[80%]">
               {user.full_name}
             </h1>
-
-            {canEdit && (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Link
-                  href={`/dashboard/users-list/edit/${user.id}`}
-                  className="px-4 py-2 bg-[#48887B] text-white rounded-lg hover:bg-[#3a6b63] transition"
-                >
-                  Редактировать
-                </Link>
-
-                <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                >
-                  Удалить
-                </button>
-              </div>
-            )}
+              {canEdit && (
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Link
+                    href={`/dashboard/users-list/edit/${user.id}`}
+                    className="px-4 py-2 bg-[#48887B] text-white rounded-lg hover:bg-[#3a6b63] transition"
+                  >
+                    Редактировать
+                  </Link>
+              
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                  >
+                    Удалить
+                  </button>
+              
+                   <Link
+                      href={`/dashboard/users-list/analytics/${user.id}`}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+                    >
+                      Аналитика
+                    </Link>
+                </div>
+              )}
           </div>
 
           <p className="mb-2">
