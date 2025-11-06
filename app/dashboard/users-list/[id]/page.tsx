@@ -8,6 +8,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import ReviewsSection from "./ReviewsSection";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+const markerIcon = L.icon({
+  iconUrl: "/point.svg",   // положи marker-icon.png в public/
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41],
+  shadowSize: [41, 41],
+});
 
 export default function UserPage() {
   const { id } = useParams();
@@ -23,6 +34,7 @@ export default function UserPage() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [mediaView, setMediaView] = useState<"photo" | "video">("photo");
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [coords, setCoords] = useState<[number, number] | null>(null);
   const [modal, setModal] = useState<{ show: boolean; message: string; type: "success" | "error" | "" }>({
     show: false,
     message: "",
@@ -35,6 +47,31 @@ export default function UserPage() {
     { name: "Ыкылас", file: "ikhlas.mp3" },
     { name: "Дуа", file: "dua.mp3" },
   ];
+
+  useEffect(() => {
+  const fetchCoords = async () => {
+    if (!user) return;
+    const address = [user.address, user.city, user.country].filter(Boolean).join(", ");
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
+      const data = await res.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        setCoords([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+      } else {
+        console.warn("Адрес не распознан или пустой", address);
+        setCoords(null);
+      }
+    } catch (err) {
+      console.error("Ошибка геокодирования:", err);
+      setCoords(null);
+    }
+  };
+  fetchCoords();
+}, [user]);
+
 
   useEffect(() => {
     if (modal.show) {
@@ -358,6 +395,32 @@ useEffect(() => {
           </div>
         </div>
       </div>
+{coords ? (
+  <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+    <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
+      Местоположение захоронения
+    </h2>
+    <div>
+
+    <MapContainer center={coords} zoom={16} scrollWheelZoom={false} className="w-full h-96 rounded-2xl">
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      />
+      <Marker position={coords} icon={markerIcon}>
+        <Popup>{user.full_name}</Popup>
+      </Marker>
+    </MapContainer>
+        </div>
+  </div>
+  
+) : (
+  <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+    <p className="text-center text-gray-500 dark:text-white">Местоположение не определено</p>
+  </div>
+)}
+
+
 
       {(user?.photos?.length > 0 || user?.videos?.length > 0) && (
         <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
