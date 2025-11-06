@@ -248,6 +248,13 @@ useEffect(() => {
               />
             </AnimatePresence>
           </div>
+          <Link
+                    href="/dashboard/dua"
+                    className="text-xl text-[#48887B] border-white border-b-2 hover:border-b-2 pb-1
+                    hover:border-[#48887B]"
+                    >
+                     Құран бағыштау за <b>{user.full_name}</b>
+                    </Link>
         </div>
 
         <div className="flex flex-col justify-start">
