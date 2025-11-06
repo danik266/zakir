@@ -51,66 +51,50 @@ export default function UserPage() {
     });
   }, []);
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data: memorialData, error } = await supabase
-        .from("memorials")
-        .select("*")
-        .eq("id", id)
-        .single();
+useEffect(() => {
+  const loadUser = async () => {
+    const { data: memorialData, error } = await supabase
+      .from("memorials")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-      if (error) {
-        console.error("Ошибка загрузки:", error);
-        setLoading(false);
-        return;
-      }
-
-      if (memorialData) {
-        let photos: string[] = [];
-        let videos: string[] = [];
-
-        try {
-          photos = Array.isArray(memorialData.photo_url)
-            ? memorialData.photo_url
-            : JSON.parse(memorialData.photo_url || "[]");
-        } catch {
-          photos = [memorialData.photo_url].filter(Boolean);
-        }
-
-        try {
-          videos = Array.isArray(memorialData.video_url)
-            ? memorialData.video_url
-            : JSON.parse(memorialData.video_url || "[]");
-        } catch {
-          videos = [memorialData.video_url].filter(Boolean);
-        }
-
-        photos = photos.map((url) =>
-          url && !url.startsWith("http")
-            ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/${url}`
-            : url
-        );
-
-        videos = videos.map((url) =>
-          url && !url.startsWith("http")
-            ? `https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/videos/${url}`
-            : url
-        );
-
-        if (!photos.length) photos = ["/nophoto.jpg"];
-
-        setUser({ ...memorialData, photos, videos });
-
-        const pageUrl = `${window.location.origin}/dashboard/users-list/${memorialData.id}`;
-        const qr = await QRCode.toDataURL(pageUrl);
-        setQrCodeUrl(qr);
-      }
-
+    if (error) {
+      console.error("Ошибка загрузки:", error);
       setLoading(false);
-    };
+      return;
+    }
 
-    loadUser();
-  }, [id]);
+    if (memorialData) {
+      // Обновляем просмотры
+      await supabase
+        .from("memorials")
+        .update({ views: (memorialData.views || 0) + 1 })
+        .eq("id", memorialData.id);
+
+      // Обновим локальное состояние с новым количеством просмотров
+      setUser({
+        ...memorialData,
+        views: (memorialData.views || 0) + 1,
+        photos: Array.isArray(memorialData.photo_url)
+          ? memorialData.photo_url
+          : JSON.parse(memorialData.photo_url || "[]"),
+        videos: Array.isArray(memorialData.video_url)
+          ? memorialData.video_url
+          : JSON.parse(memorialData.video_url || "[]"),
+      });
+
+      const pageUrl = `${window.location.origin}/dashboard/users-list/${memorialData.id}`;
+      const qr = await QRCode.toDataURL(pageUrl);
+      setQrCodeUrl(qr);
+    }
+
+    setLoading(false);
+  };
+
+  loadUser();
+}, [id]);
+
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -361,6 +345,9 @@ export default function UserPage() {
                   })
                 : "—"}
             </p>
+            <div className="mt-2 text-sm text-gray-500 dark:text-white">
+          Просмотров: <span className="font-semibold">{user.views || 0}</span>
+        </div>
           </div>
         </div>
       </div>
