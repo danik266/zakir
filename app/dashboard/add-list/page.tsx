@@ -7,46 +7,23 @@ import photocam from "../../../public/photocam.svg";
 import videocam from "../../../public/videocam.svg";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
-import L, { LatLng } from "leaflet";
+import L from "leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 
-// --- иконка маркера ---
-const markerIcon = L.icon({
-  iconUrl: "/point.svg",
+const markerIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
-  popupAnchor: [0, -41],
-  shadowSize: [41, 41],
 });
 
-// --- динамические импорты ---
-const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
-
-// --- динамический компонент LocationPicker ---
-const LocationPicker = dynamic(
-  () =>
-    import("react-leaflet").then(({ useMapEvents }) => {
-      return function LocationPicker({ onSelect }: { onSelect: (latlng: LatLng) => void }) {
-        useMapEvents({
-          click(e) {
-            onSelect(e.latlng);
-          },
-        });
-        return null;
-      };
-    }),
-  { ssr: false }
-);
-// --- типизация локации ---
-interface SelectedLocation {
-  latitude: number | null;
-  longitude: number | null;
-  address: string;
-  city: string;
-  country: string;
+function LocationPicker({ onSelect }) {
+  useMapEvents({
+    click(e) {
+      onSelect(e.latlng);
+    },
+  });
+  return null;
 }
 
 export default function AddList() {
@@ -75,9 +52,8 @@ export default function AddList() {
   const [isClicked, setIsClicked] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
-
-  const [position, setPosition] = useState<LatLng | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<SelectedLocation>({
+  const [position, setPosition] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState({
     latitude: null,
     longitude: null,
     address: "",
@@ -87,34 +63,30 @@ export default function AddList() {
 
   const [saving, setSaving] = useState(false);
 
-  // ✅ исправлено: тип latlng строго LatLng
-  const handleSelect = async (latlng: LatLng) => {
-    setPosition(latlng);
+  const handleSelect = async (latlng) => {
+  setPosition(latlng);
 
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`
-    );
-    const data = await res.json();
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`
+  );
+  const data = await res.json();
 
-    const addressData = data.address || {};
-    const street = addressData.road || "";
-    const house = addressData.house_number || "";
-    const city =
-      addressData.city || addressData.town || addressData.village || "";
-    const country = addressData.country || "";
+  const addressData = data.address || {};
+  const street = addressData.road || "";
+  const house = addressData.house_number || "";
+  const city = addressData.city || addressData.town || addressData.village || "";
+  const country = addressData.country || "";
 
-    const address = `${street}${house ? " " + house : ""}${
-      city ? ", " + city : ""
-    }${country ? ", " + country : ""}`;
+  const address = `${street}${house ? " " + house : ""}${city ? ", " + city : ""}${country ? ", " + country : ""}`;
 
-    setSelectedLocation({
-      latitude: latlng.lat,
-      longitude: latlng.lng,
-      address: address || data.display_name || "",
-      city,
-      country,
-    });
-  };
+  setSelectedLocation({
+    latitude: latlng.lat,
+    longitude: latlng.lng,
+    address: address || data.display_name || "",
+    city,
+    country,
+  });
+};
 
   useEffect(() => {
     const checkSession = async () => {
@@ -133,6 +105,7 @@ export default function AddList() {
     checkSession();
   }, [router]);
 
+  
   useEffect(() => {
     const fetchUser = async () => {
       const { data, error } = await supabase.auth.getUser();
@@ -147,8 +120,7 @@ export default function AddList() {
     setFormData({
       full_name: "Иванов Иван Иванович",
       iin: "990101300123",
-      description:
-        "Замечательный человек, добрый и отзывчивый. Помним и любим.",
+      description: "Замечательный человек, добрый и отзывчивый. Помним и любим.",
       birth_date: "1990-01-01",
       death_date: "2020-05-15",
       religion: "Христианство",
@@ -218,7 +190,7 @@ export default function AddList() {
         } catch {}
       });
     };
-  }, [photoPreviews, videoPreviews]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -254,7 +226,6 @@ export default function AddList() {
           "https://knydrirjmrexqyohethp.supabase.co/storage/v1/object/public/photos/nophoto.jpg",
         ];
       }
-
       if (videos.length > 0) {
         for (const file of videos) {
           const cleanName = file.name
@@ -276,9 +247,7 @@ export default function AddList() {
         }
       }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const currentUser = session?.user;
       const created_by_email = currentUser?.email || "Неизвестно";
       const created_by_name =
@@ -287,21 +256,24 @@ export default function AddList() {
         created_by_email.split("@")[0] ||
         "Без имени";
 
-      const { error: insertError } = await supabase.from("memorials").insert([
-        {
-          ...person,
-          latitude: selectedLocation.latitude,
-          longitude: selectedLocation.longitude,
-          address: selectedLocation.address,
-          city: selectedLocation.city || person.city,
-          country: selectedLocation.country || person.country,
-          photo_url: JSON.stringify(photoUrls),
-          video_url: JSON.stringify(videoUrls),
-          created_at: new Date().toISOString(),
-          created_by_email,
-          created_by_name,
-        },
-      ]);
+const { error: insertError } = await supabase
+  .from("memorials")
+  .insert([
+    {
+      ...person,
+      latitude: selectedLocation.latitude,
+      longitude: selectedLocation.longitude,
+      address: selectedLocation.address,
+      city: selectedLocation.city || person.city,
+      country: selectedLocation.country || person.country,
+      photo_url: JSON.stringify(photoUrls),
+      video_url: JSON.stringify(videoUrls),
+      created_at: new Date().toISOString(),
+      created_by_email,
+      created_by_name,
+    },
+  ]);
+
 
       if (insertError) throw insertError;
 
@@ -328,6 +300,7 @@ export default function AddList() {
       setIsClicked(false);
     }
   };
+
   return (
     <div className="px-4 sm:px-6 lg:px-20 py-10">
       <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
