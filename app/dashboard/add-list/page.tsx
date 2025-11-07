@@ -7,30 +7,39 @@ import photocam from "../../../public/photocam.svg";
 import videocam from "../../../public/videocam.svg";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import L, { LatLng } from "leaflet";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 
-const markerIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+// --- иконка маркера ---
+const markerIcon = L.icon({
+  iconUrl: "/point.svg",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [0, -41],
+  shadowSize: [41, 41],
 });
 
-// --- типизация LocationPicker ---
-interface LocationPickerProps {
-  onSelect: (latlng: LatLng) => void;
-}
+// --- динамические импорты ---
+const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
 
-function LocationPicker({ onSelect }: LocationPickerProps) {
-  useMapEvents({
-    click(e) {
-      onSelect(e.latlng);
-    },
-  });
-  return null;
-}
-
+// --- динамический компонент LocationPicker ---
+const LocationPicker = dynamic(
+  () =>
+    import("react-leaflet").then(({ useMapEvents }) => {
+      return function LocationPicker({ onSelect }: { onSelect: (latlng: LatLng) => void }) {
+        useMapEvents({
+          click(e) {
+            onSelect(e.latlng);
+          },
+        });
+        return null;
+      };
+    }),
+  { ssr: false }
+);
 // --- типизация локации ---
 interface SelectedLocation {
   latitude: number | null;
