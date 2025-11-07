@@ -17,7 +17,7 @@ const markerIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-function LocationPicker({ onSelect }) {
+function LocationPicker({ onSelect }: { onSelect: (latlng: L.LatLng) => void }) {
   useMapEvents({
     click(e) {
       onSelect(e.latlng);
