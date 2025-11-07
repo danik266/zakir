@@ -49,28 +49,34 @@ export default function UserPage() {
   ];
 
   useEffect(() => {
-  const fetchCoords = async () => {
-    if (!user) return;
-    const address = [user.address, user.city, user.country].filter(Boolean).join(", ");
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-      );
-      const data = await res.json();
+  if (!user) return;
 
-      if (Array.isArray(data) && data.length > 0) {
-        setCoords([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
-      } else {
-        console.warn("Адрес не распознан или пустой", address);
+  // Если у пользователя есть сохранённые координаты — используем их
+  if (user.latitude && user.longitude) {
+    setCoords([user.latitude, user.longitude]);
+  } else {
+    // Если координат нет — можно попробовать определить по адресу (резервный вариант)
+    const fetchCoords = async () => {
+      const address = [user.address, user.city, user.country].filter(Boolean).join(", ");
+      if (!address) return;
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+        );
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setCoords([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+        } else {
+          setCoords(null);
+        }
+      } catch {
         setCoords(null);
       }
-    } catch (err) {
-      console.error("Ошибка геокодирования:", err);
-      setCoords(null);
-    }
-  };
-  fetchCoords();
+    };
+    fetchCoords();
+  }
 }, [user]);
+
 
 
   useEffect(() => {
@@ -326,7 +332,7 @@ useEffect(() => {
               
                    <Link
                       href={`/dashboard/users-list/analytics/${user.id}`}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg text-center hover:bg-yellow-600 transition"
                     >
                       Аналитика
                     </Link>
@@ -357,26 +363,30 @@ useEffect(() => {
             <p>
               <span className="font-semibold">Город:</span> {user.city || "—"}
             </p>
-            <p>
-              <span className="font-semibold">Адрес:</span> {user.address || "—"}
-            </p>
-            <p>
-              <span className="font-semibold">Ссылка:</span>{" "}
-              {user.place_url ? (
-                <a
-                  href={user.place_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#48887B] hover:underline break-all"
-                >
-                  Нажмите здесь
-                </a>
-              ) : (
-                "—"
-              )}
-            </p>
+<p>
+  <span className="font-semibold">Точный адрес:</span>{" "}
+  {user.address ? (
+    <span>
+      {user.address}
+      {user.latitude && user.longitude && (
+        <>
+          {" "}
+          (<a
+            href={`https://www.google.com/maps?q=${user.latitude},${user.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#48887B] hover:underline"
+          >
+            Открыть в Google Maps
+          </a>)
+        </>
+      )}
+    </span>
+  ) : (
+    "—"
+  )}
+</p>
           </div>
-
           {qrCodeUrl && (
             <div className="flex flex-col items-center md:items-start gap-2">
               <img
@@ -412,7 +422,7 @@ useEffect(() => {
       </div>
 {coords ? (
   <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-    <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
+    <h2 className="text-2xl font-semibold mb-4 text-center text-[#48887B] dark:text-white">
       Местоположение захоронения
     </h2>
     <div>
@@ -434,8 +444,6 @@ useEffect(() => {
     <p className="text-center text-gray-500 dark:text-white">Местоположение не определено</p>
   </div>
 )}
-
-
 
       {(user?.photos?.length > 0 || user?.videos?.length > 0) && (
         <div className="max-w-6xl mx-auto mt-10 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">

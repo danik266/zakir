@@ -7,6 +7,24 @@ import photocam from "../../../public/photocam.svg";
 import videocam from "../../../public/videocam.svg";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+
+const markerIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+function LocationPicker({ onSelect }) {
+  useMapEvents({
+    click(e) {
+      onSelect(e.latlng);
+    },
+  });
+  return null;
+}
 
 export default function AddList() {
   const [person, setFormData] = useState({
@@ -34,6 +52,42 @@ export default function AddList() {
   const [isClicked, setIsClicked] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
+  const [position, setPosition] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState({
+    latitude: null,
+    longitude: null,
+    address: "",
+    city: "",
+    country: "",
+  });
+
+  const [saving, setSaving] = useState(false);
+
+  const handleSelect = async (latlng) => {
+  setPosition(latlng);
+
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`
+  );
+  const data = await res.json();
+
+  const addressData = data.address || {};
+  const street = addressData.road || "";
+  const house = addressData.house_number || "";
+  const city = addressData.city || addressData.town || addressData.village || "";
+  const country = addressData.country || "";
+
+  const address = `${street}${house ? " " + house : ""}${city ? ", " + city : ""}${country ? ", " + country : ""}`;
+
+  setSelectedLocation({
+    latitude: latlng.lat,
+    longitude: latlng.lng,
+    address: address || data.display_name || "",
+    city,
+    country,
+  });
+};
+
 
   useEffect(() => {
     const checkSession = async () => {
@@ -203,18 +257,24 @@ export default function AddList() {
         created_by_email.split("@")[0] ||
         "Без имени";
 
-      const { error: insertError } = await supabase
-        .from("memorials")
-        .insert([
-          {
-            ...person,
-            photo_url: JSON.stringify(photoUrls),
-            video_url: JSON.stringify(videoUrls),
-            created_at: new Date().toISOString(),
-            created_by_email,
-            created_by_name,
-          },
-        ]);
+const { error: insertError } = await supabase
+  .from("memorials")
+  .insert([
+    {
+      ...person,
+      latitude: selectedLocation.latitude,
+      longitude: selectedLocation.longitude,
+      address: selectedLocation.address,
+      city: selectedLocation.city || person.city,
+      country: selectedLocation.country || person.country,
+      photo_url: JSON.stringify(photoUrls),
+      video_url: JSON.stringify(videoUrls),
+      created_at: new Date().toISOString(),
+      created_by_email,
+      created_by_name,
+    },
+  ]);
+
 
       if (insertError) throw insertError;
 
@@ -241,7 +301,6 @@ export default function AddList() {
       setIsClicked(false);
     }
   };
-
   return (
     <div className="px-4 sm:px-6 lg:px-20 py-10">
       <h1 className="text-3xl sm:text-4xl text-[#48887B] font-bold mb-8 text-center">
@@ -507,25 +566,32 @@ export default function AddList() {
             className="p-3 border border-[#48887B] rounded-3xl w-full"
             required
           />
-          <input
-            type="text"
-            name="address"
-            placeholder="Адрес"
-            value={person.address}
-            onChange={handleChange}
-            className="p-3 border border-[#48887B] rounded-3xl w-full"
-            required
-          />
-          <input
-            type="url"
-            name="place_url"
-            placeholder="Ссылка на место (2GIS, Yandex Map, Google Maps)"
-            value={person.place_url}
-            onChange={handleChange}
-            className="p-3 border border-[#48887B] rounded-3xl w-full"
-            required
-          />
+          </div>
+        <div className="w-full h-[600px] rounded-2xl overflow-hidden  z-0">
+              <h2 className="text-xl text-center font-semibold mb-5 text-[#48887B] dark:text-white">
+      Выберите местоположение на карте
+    </h2>
+          <MapContainer
+            center={[51.1694, 71.4491]} 
+            zoom={6}
+            style={{ height: "100%", width: "100%", borderRadius: "16px" }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <LocationPicker onSelect={handleSelect} />
+            {position && <Marker position={position} icon={markerIcon} />}
+          </MapContainer>
         </div>
+
+        {selectedLocation.latitude && (
+          <div className="mt-6 bg-gray-50 dark:bg-gray-800 p-6 rounded-xl shadow-md text-gray-800 dark:text-gray-200">
+            <h3 className="text-lg font-semibold mb-3">Выбранное место</h3>
+            <div className="space-y-1 text-sm">
+              <p><span className="font-medium">{selectedLocation.address}</span></p>
+              <p>Страна: {selectedLocation.country || "—"}</p>
+              <p>Город: {selectedLocation.city || "—"}</p>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="flex flex-col items-center gap-5">
             <div
