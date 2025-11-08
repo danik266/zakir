@@ -1,22 +1,25 @@
 "use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic"; // ✅ добавлено
 import { supabase } from "../../../lib/supabaseClient";
 import photocam from "../../../public/photocam.svg";
 import videocam from "../../../public/videocam.svg";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import type { LatLngLiteral } from "leaflet";
+import type { LatLngLiteral, LeafletMouseEvent } from "leaflet";
 
-const markerIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
+// Динамический импорт только компонентов карты
+const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
+const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
+
+// Вложенный компонент, который использует useMapEvents
+import { useMapEvents } from "react-leaflet";
+
+const L = typeof window !== "undefined" ? require("leaflet") : null; // 👈 защита
+
 
 function LocationPicker({ onSelect }: { onSelect: (latlng: LatLngLiteral) => void }) {
   useMapEvents({
@@ -70,6 +73,20 @@ const [selectedLocation, setSelectedLocation] = useState<Location>({
 });
 
   const [saving, setSaving] = useState(false);
+  const [markerIcon, setMarkerIcon] = useState<L.Icon | undefined>(undefined);
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const L = require("leaflet");
+    setMarkerIcon(
+      new L.Icon({
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+      })
+    );
+  }
+}, []);
 
 const handleSelect = async (latlng: LatLngLiteral) => {
     setPosition(latlng);
