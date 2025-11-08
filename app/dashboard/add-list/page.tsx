@@ -9,6 +9,7 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
 import type { LatLngLiteral, LeafletMouseEvent } from "leaflet";
+import type { Map as LeafletMap } from "leaflet";
 
 // Динамический импорт только компонентов карты
 const MapContainer = dynamic(
@@ -51,7 +52,7 @@ export default function AddList() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
-
+  const mapRef = useRef<L.Map | null>(null);
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
@@ -92,6 +93,49 @@ useEffect(() => {
   };
   loadLeaflet();
 }, []);
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+const handleSearch = async () => {
+  if (!searchQuery) return;
+
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        searchQuery
+      )}&addressdetails=1&limit=1`
+    );
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const place = data[0];
+      const lat = parseFloat(place.lat);
+      const lon = parseFloat(place.lon);
+      const latlng = { lat, lng: lon };
+      setPosition(latlng);
+
+      const addressData = place.address || {};
+      const city = addressData.city || addressData.town || addressData.village || "";
+      const country = addressData.country || "";
+      const address = place.display_name || "";
+
+      setSelectedLocation({
+        latitude: lat,
+        longitude: lon,
+        address,
+        city,
+        country,
+      });
+
+      // Перемещаем карту к найденной точке
+      mapRef.current?.flyTo(latlng, 14); // zoom 14
+    } else {
+      alert("Место не найдено");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Ошибка поиска");
+  }
+};
 
 const handleSelect = async (latlng: LatLngLiteral) => {
     setPosition(latlng);
@@ -598,18 +642,35 @@ const { error: insertError } = await supabase
           />
           </div>
         <div className="w-full h-[600px] rounded-2xl overflow-hidden  z-0">
+            <input
+              type="text"
+              placeholder="Введите адрес для поиска"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="p-3 border border-[#48887B] rounded-3xl w-full"
+            />
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="mt-2 px-4 py-2 bg-[#48887B] text-white rounded-3xl hover:bg-[#3a6f63] transition"
+            >
+              Найти
+            </button>
               <h2 className="text-xl text-center font-semibold mb-5 text-[#48887B] dark:text-white">
-      Выберите местоположение на карте
-    </h2>
-          <MapContainer
-            center={[51.1694, 71.4491]} 
-            zoom={6}
-            style={{ height: "100%", width: "100%", borderRadius: "16px" }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <LocationPicker onSelect={handleSelect} />
-            {position && <Marker position={position} icon={markerIcon} />}
-          </MapContainer>
+                Выберите местоположение на карте
+              </h2>
+        <MapContainer
+          center={[51.1694, 71.4491]}
+          zoom={6}
+          style={{ height: "100%", width: "100%", borderRadius: "16px" }}
+          ref={(mapInstance) => {
+            mapRef.current = mapInstance;
+          }}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <LocationPicker onSelect={handleSelect} />
+          {position && <Marker position={position} icon={markerIcon} />}
+        </MapContainer>
         </div>
 
         {selectedLocation.latitude && (
