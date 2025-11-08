@@ -17,7 +17,7 @@ const markerIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-function LocationPicker({ onSelect }) {
+function LocationPicker({ onSelect }: { onSelect: (latlng: LatLngLiteral) => void }) {
   useMapEvents({
     click(e) {
       onSelect(e.latlng);
@@ -25,7 +25,6 @@ function LocationPicker({ onSelect }) {
   });
   return null;
 }
-
 export default function AddList() {
   const [person, setFormData] = useState({
     full_name: "",
@@ -63,30 +62,30 @@ export default function AddList() {
 
   const [saving, setSaving] = useState(false);
 
-  const handleSelect = async (latlng) => {
-  setPosition(latlng);
+const handleSelect = async (latlng: LatLngLiteral) => {
+    setPosition(latlng);
 
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`
-  );
-  const data = await res.json();
+   const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`
+    );
+    const data = await res.json();
 
-  const addressData = data.address || {};
-  const street = addressData.road || "";
-  const house = addressData.house_number || "";
-  const city = addressData.city || addressData.town || addressData.village || "";
-  const country = addressData.country || "";
+    const addressData = data.address || {};
+    const street = addressData.road || "";
+    const house = addressData.house_number || "";
+    const city = addressData.city || addressData.town || addressData.village || "";
+    const country = addressData.country || "";
 
-  const address = `${street}${house ? " " + house : ""}${city ? ", " + city : ""}${country ? ", " + country : ""}`;
+    const address = `${street}${house ? " " + house : ""}${city ? ", " + city : ""}${country ? ", " + country : ""}`;
 
-  setSelectedLocation({
-    latitude: latlng.lat,
-    longitude: latlng.lng,
-    address: address || data.display_name || "",
-    city,
-    country,
-  });
-};
+    setSelectedLocation({
+      latitude: latlng.lat,
+      longitude: latlng.lng,
+      address: address || data.display_name || "",
+      city,
+      country,
+    });
+  };
 
   useEffect(() => {
     const checkSession = async () => {
