@@ -11,9 +11,18 @@ import "leaflet/dist/leaflet.css";
 import type { LatLngLiteral, LeafletMouseEvent } from "leaflet";
 
 // Динамический импорт только компонентов карты
-const MapContainer = dynamic(() => import("react-leaflet").then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import("react-leaflet").then(m => m.Marker), { ssr: false });
+const MapContainer = dynamic(
+  async () => (await import("react-leaflet")).MapContainer,
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  async () => (await import("react-leaflet")).TileLayer,
+  { ssr: false }
+);
+const Marker = dynamic(
+  async () => (await import("react-leaflet")).Marker,
+  { ssr: false }
+);
 
 // Вложенный компонент, который использует useMapEvents
 import { useMapEvents } from "react-leaflet";
@@ -74,18 +83,17 @@ const [selectedLocation, setSelectedLocation] = useState<Location>({
 
   const [saving, setSaving] = useState(false);
   const [markerIcon, setMarkerIcon] = useState<L.Icon | undefined>(undefined);
-
 useEffect(() => {
-  if (typeof window !== "undefined") {
-    const L = require("leaflet");
-    setMarkerIcon(
-      new L.Icon({
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-      })
-    );
-  }
+  const loadLeaflet = async () => {
+    const L = await import("leaflet");
+    const icon = new L.Icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+    });
+    setMarkerIcon(icon);
+  };
+  loadLeaflet();
 }, []);
 
 const handleSelect = async (latlng: LatLngLiteral) => {
