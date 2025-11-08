@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import type { LatLngLiteral } from "leaflet";
 
 const markerIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -51,14 +52,22 @@ export default function AddList() {
   const [isClicked, setIsClicked] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
-  const [position, setPosition] = useState(null);
-  const [selectedLocation, setSelectedLocation] = useState({
-    latitude: null,
-    longitude: null,
-    address: "",
-    city: "",
-    country: "",
-  });
+  const [position, setPosition] = useState<LatLngLiteral | null>(null);
+type Location = {
+  latitude: number | null;
+  longitude: number | null;
+  address: string;
+  city: string;
+  country: string;
+};
+
+const [selectedLocation, setSelectedLocation] = useState<Location>({
+  latitude: null,
+  longitude: null,
+  address: "",
+  city: "",
+  country: "",
+});
 
   const [saving, setSaving] = useState(false);
 
