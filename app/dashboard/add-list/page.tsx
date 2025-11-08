@@ -27,9 +27,6 @@ const Marker = dynamic(
 // Вложенный компонент, который использует useMapEvents
 import { useMapEvents } from "react-leaflet";
 
-const L = typeof window !== "undefined" ? require("leaflet") : null; // 👈 защита
-
-
 function LocationPicker({ onSelect }: { onSelect: (latlng: LatLngLiteral) => void }) {
   useMapEvents({
     click(e) {
