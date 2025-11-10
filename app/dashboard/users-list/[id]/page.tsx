@@ -427,7 +427,7 @@ useEffect(() => {
     </h2>
     <div>
 
-    <MapContainer center={coords} zoom={16} scrollWheelZoom={false} className="w-full h-96 rounded-2xl">
+    <MapContainer center={coords} zoom={16} scrollWheelZoom={false} className="w-full h-96 rounded-2xl z-0">
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
