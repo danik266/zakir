@@ -510,15 +510,6 @@ export default function EditMemorial() {
             className="p-3 border border-[#48887B] rounded-3xl w-full"
             required
           />
-          <input
-            type="url"
-            name="place_url"
-            placeholder="Ссылка на место (2GIS, Yandex Map, Google Maps)"
-            value={formData.place_url}
-            onChange={handleChange}
-            className="p-3 border border-[#48887B] rounded-3xl w-full"
-            required
-          />
         </div>
 
         <div>
