@@ -511,7 +511,6 @@ export default function EditMemorial() {
             required
           />
         </div>
-
         <div>
           <h3 className="font-semibold mb-2">Фото</h3>
           <div

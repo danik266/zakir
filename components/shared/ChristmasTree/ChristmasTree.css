@@ -1,0 +1,25 @@
+@keyframes swing {
+  0%, 100% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+}
+
+.animate-swing {
+  animation: swing 4s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 50%, 100% {
+    opacity: 1;
+  }
+  25%, 75% {
+    opacity: 0.25;
+  }
+}
+
+.animate-blink {
+  animation: blink 2s infinite;
+}
